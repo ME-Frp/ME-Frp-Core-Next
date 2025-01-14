@@ -166,7 +166,7 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 		xl.Warnf("启动隧道 [%s] 失败: %v", inMsg.ProxyName, err)
 	} else {
 		if inMsg.ProxyType != "http" && inMsg.ProxyType != "https" {
-			inMsg.RemoteAddr = ctl.sessionCtx.Common.ServerAddr + ":" + inMsg.RemoteAddr
+			inMsg.RemoteAddr = ctl.sessionCtx.Common.ServerAddr + inMsg.RemoteAddr
 		}
 		xl.Infof("启动 [%s] 隧道 [%s] 成功, 您可以使用 [%s] 访问您的服务", inMsg.ProxyType, inMsg.ProxyName, inMsg.RemoteAddr)
 	}
