@@ -97,14 +97,14 @@ func (svr *Service) healthz(w http.ResponseWriter, _ *http.Request) {
 func (svr *Service) apiServerInfo(w http.ResponseWriter, r *http.Request) {
 	res := GeneralResponse{Code: 200}
 	defer func() {
-		log.Infof("Http response [%s]: code [%d]", r.URL.Path, res.Code)
+		log.Infof("HTTP 响应: [%s] 状态码 [%d]", r.URL.Path, res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
 		}
 	}()
 
-	log.Infof("Http request: [%s]", r.URL.Path)
+	log.Infof("HTTP 请求: [%s]", r.URL.Path)
 	serverStats := mem.StatsCollector.GetServer()
 	svrResp := serverInfoResp{
 		Version:               version.Full(),
@@ -218,13 +218,13 @@ func (svr *Service) apiProxyByType(w http.ResponseWriter, r *http.Request) {
 	proxyType := params["type"]
 
 	defer func() {
-		log.Infof("Http response [%s]: code [%d]", r.URL.Path, res.Code)
+		log.Infof("HTTP 响应: [%s] 状态码 [%d]", r.URL.Path, res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
 		}
 	}()
-	log.Infof("Http request: [%s]", r.URL.Path)
+	log.Infof("HTTP 请求: [%s]", r.URL.Path)
 
 	proxyInfoResp := GetProxyInfoResp{}
 	proxyInfoResp.Proxies = svr.getProxyStatsByType(proxyType)
@@ -244,12 +244,12 @@ func (svr *Service) getProxyStatsByType(proxyType string) (proxyInfos []*ProxySt
 		if pxy, ok := svr.pxyManager.GetByName(ps.Name); ok {
 			content, err := json.Marshal(pxy.GetConfigurer())
 			if err != nil {
-				log.Warnf("marshal proxy [%s] conf info error: %v", ps.Name, err)
+				log.Warnf("解析隧道 [%s] 配置信息失败: %v", ps.Name, err)
 				continue
 			}
 			proxyInfo.Conf = getConfByType(ps.Type)
 			if err = json.Unmarshal(content, &proxyInfo.Conf); err != nil {
-				log.Warnf("unmarshal proxy [%s] conf info error: %v", ps.Name, err)
+				log.Warnf("解析隧道 [%s] 配置信息失败: %v", ps.Name, err)
 				continue
 			}
 			proxyInfo.Status = "online"
@@ -290,13 +290,13 @@ func (svr *Service) apiProxyByTypeAndName(w http.ResponseWriter, r *http.Request
 	name := params["name"]
 
 	defer func() {
-		log.Infof("Http response [%s]: code [%d]", r.URL.Path, res.Code)
+		log.Infof("HTTP 响应: [%s] 状态码 [%d]", r.URL.Path, res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
 		}
 	}()
-	log.Infof("Http request: [%s]", r.URL.Path)
+	log.Infof("HTTP 请求: [%s]", r.URL.Path)
 
 	var proxyStatsResp GetProxyStatsResp
 	proxyStatsResp, res.Code, res.Msg = svr.getProxyStatsByTypeAndName(proxyType, name)
@@ -313,21 +313,21 @@ func (svr *Service) getProxyStatsByTypeAndName(proxyType string, proxyName strin
 	ps := mem.StatsCollector.GetProxiesByTypeAndName(proxyType, proxyName)
 	if ps == nil {
 		code = 404
-		msg = "no proxy info found"
+		msg = "未找到隧道信息"
 	} else {
 		if pxy, ok := svr.pxyManager.GetByName(proxyName); ok {
 			content, err := json.Marshal(pxy.GetConfigurer())
 			if err != nil {
-				log.Warnf("marshal proxy [%s] conf info error: %v", ps.Name, err)
+				log.Warnf("解析隧道 [%s] 配置信息失败: %v", ps.Name, err)
 				code = 400
-				msg = "parse conf error"
+				msg = "解析配置失败"
 				return
 			}
 			proxyInfo.Conf = getConfByType(ps.Type)
 			if err = json.Unmarshal(content, &proxyInfo.Conf); err != nil {
-				log.Warnf("unmarshal proxy [%s] conf info error: %v", ps.Name, err)
+				log.Warnf("解析隧道 [%s] 配置信息失败: %v", ps.Name, err)
 				code = 400
-				msg = "parse conf error"
+				msg = "解析配置失败"
 				return
 			}
 			proxyInfo.Status = "online"
@@ -358,13 +358,13 @@ func (svr *Service) apiProxyTraffic(w http.ResponseWriter, r *http.Request) {
 	name := params["name"]
 
 	defer func() {
-		log.Infof("Http response [%s]: code [%d]", r.URL.Path, res.Code)
+		log.Infof("HTTP 响应: [%s] 状态码 [%d]", r.URL.Path, res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
 		}
 	}()
-	log.Infof("Http request: [%s]", r.URL.Path)
+	log.Infof("HTTP 请求: [%s]", r.URL.Path)
 
 	trafficResp := GetProxyTrafficResp{}
 	trafficResp.Name = name
@@ -372,7 +372,7 @@ func (svr *Service) apiProxyTraffic(w http.ResponseWriter, r *http.Request) {
 
 	if proxyTrafficInfo == nil {
 		res.Code = 404
-		res.Msg = "no proxy info found"
+		res.Msg = "未找到隧道信息"
 		return
 	}
 	trafficResp.TrafficIn = proxyTrafficInfo.TrafficIn
@@ -386,9 +386,9 @@ func (svr *Service) apiProxyTraffic(w http.ResponseWriter, r *http.Request) {
 func (svr *Service) deleteProxies(w http.ResponseWriter, r *http.Request) {
 	res := GeneralResponse{Code: 200}
 
-	log.Infof("Http request: [%s]", r.URL.Path)
+	log.Infof("HTTP 请求: [%s]", r.URL.Path)
 	defer func() {
-		log.Infof("Http response [%s]: code [%d]", r.URL.Path, res.Code)
+		log.Infof("HTTP 响应: [%s] 状态码 [%d]", r.URL.Path, res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
@@ -398,9 +398,9 @@ func (svr *Service) deleteProxies(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
 	if status != "offline" {
 		res.Code = 400
-		res.Msg = "status only support offline"
+		res.Msg = "status 仅支持 offline"
 		return
 	}
 	cleared, total := mem.StatsCollector.ClearOfflineProxies()
-	log.Infof("cleared [%d] offline proxies, total [%d] proxies", cleared, total)
+	log.Infof("清理 [%d] 个离线隧道, 共 [%d] 个隧道", cleared, total)
 }

@@ -31,10 +31,10 @@ func ValidateClientCommonConfig(c *v1.ClientCommonConfig) (Warning, error) {
 		errs     error
 	)
 	if !slices.Contains(SupportedAuthMethods, c.Auth.Method) {
-		errs = AppendError(errs, fmt.Errorf("invalid auth method, optional values are %v", SupportedAuthMethods))
+		errs = AppendError(errs, fmt.Errorf("验证方法无效, 可选值为 %v", SupportedAuthMethods))
 	}
 	if !lo.Every(SupportedAuthAdditionalScopes, c.Auth.AdditionalScopes) {
-		errs = AppendError(errs, fmt.Errorf("invalid auth additional scopes, optional values are %v", SupportedAuthAdditionalScopes))
+		errs = AppendError(errs, fmt.Errorf("验证附加范围无效, 可选值为 %v", SupportedAuthAdditionalScopes))
 	}
 
 	if err := validateLogConfig(&c.Log); err != nil {
@@ -47,14 +47,14 @@ func ValidateClientCommonConfig(c *v1.ClientCommonConfig) (Warning, error) {
 
 	if c.Transport.HeartbeatTimeout > 0 && c.Transport.HeartbeatInterval > 0 {
 		if c.Transport.HeartbeatTimeout < c.Transport.HeartbeatInterval {
-			errs = AppendError(errs, fmt.Errorf("invalid transport.heartbeatTimeout, heartbeat timeout should not less than heartbeat interval"))
+			errs = AppendError(errs, fmt.Errorf("心跳包超时时间小于心跳包间隔时间"))
 		}
 	}
 
 	if !lo.FromPtr(c.Transport.TLS.Enable) {
 		checkTLSConfig := func(name string, value string) Warning {
 			if value != "" {
-				return fmt.Errorf("%s is invalid when transport.tls.enable is false", name)
+				return fmt.Errorf("%s 在 transport.tls.enable 为 false 时无效", name)
 			}
 			return nil
 		}
@@ -65,17 +65,17 @@ func ValidateClientCommonConfig(c *v1.ClientCommonConfig) (Warning, error) {
 	}
 
 	if !slices.Contains(SupportedTransportProtocols, c.Transport.Protocol) {
-		errs = AppendError(errs, fmt.Errorf("invalid transport.protocol, optional values are %v", SupportedTransportProtocols))
+		errs = AppendError(errs, fmt.Errorf("隧道协议无效, 可选值为 %v", SupportedTransportProtocols))
 	}
 
 	for _, f := range c.IncludeConfigFiles {
 		absDir, err := filepath.Abs(filepath.Dir(f))
 		if err != nil {
-			errs = AppendError(errs, fmt.Errorf("include: parse directory of %s failed: %v", f, err))
+			errs = AppendError(errs, fmt.Errorf("Include: 解析 %s 的目录失败: %v", f, err))
 			continue
 		}
 		if _, err := os.Stat(absDir); os.IsNotExist(err) {
-			errs = AppendError(errs, fmt.Errorf("include: directory of %s not exist", f))
+			errs = AppendError(errs, fmt.Errorf("Include: %s 的目录不存在", f))
 		}
 	}
 	return warnings, errs
@@ -93,13 +93,13 @@ func ValidateAllClientConfig(c *v1.ClientCommonConfig, proxyCfgs []v1.ProxyConfi
 
 	for _, c := range proxyCfgs {
 		if err := ValidateProxyConfigurerForClient(c); err != nil {
-			return warnings, fmt.Errorf("proxy %s: %v", c.GetBaseConfig().Name, err)
+			return warnings, fmt.Errorf("隧道 %s: %v", c.GetBaseConfig().Name, err)
 		}
 	}
 
 	for _, c := range visitorCfgs {
 		if err := ValidateVisitorConfigurer(c); err != nil {
-			return warnings, fmt.Errorf("visitor %s: %v", c.GetBaseConfig().Name, err)
+			return warnings, fmt.Errorf("访问者 %s: %v", c.GetBaseConfig().Name, err)
 		}
 	}
 	return warnings, nil

@@ -19,6 +19,6 @@ import (
 )
 
 var (
-	ErrMsgType   = errors.New("message type error")
-	ErrCtlClosed = errors.New("control is closed")
+	ErrMsgType   = errors.New("消息类型错误")
+	ErrCtlClosed = errors.New("控制已关闭")
 )

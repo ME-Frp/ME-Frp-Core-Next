@@ -55,7 +55,7 @@ func (muxer *HTTPConnectTCPMuxer) readHTTPConnectRequest(rd io.Reader) (host, ht
 	}
 
 	if req.Method != "CONNECT" {
-		err = fmt.Errorf("connections to tcp vhost must be of method CONNECT")
+		err = fmt.Errorf("连接到 TCP vHost 的方法必须是 CONNECT")
 		return
 	}
 

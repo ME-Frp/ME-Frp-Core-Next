@@ -205,7 +205,7 @@ func (v *Muxer) handle(c net.Conn) {
 
 	sConn, reqInfoMap, err := v.vhostFunc(c)
 	if err != nil {
-		log.Debugf("get hostname from http/https request error: %v", err)
+		log.Debugf("从 HTTP/HTTPS 请求中获取主机名错误: %v", err)
 		_ = c.Close()
 		return
 	}
@@ -215,7 +215,7 @@ func (v *Muxer) handle(c net.Conn) {
 	httpUser := reqInfoMap["HTTPUser"]
 	l, ok := v.getListener(name, path, httpUser)
 	if !ok {
-		log.Debugf("http request for host [%s] path [%s] httpUser [%s] not found", name, path, httpUser)
+		log.Debugf("HTTP/HTTPS 请求主机名 [%s] 路径 [%s] 用户 [%s] 未找到", name, path, httpUser)
 		v.failHook(sConn)
 		return
 	}
@@ -223,7 +223,7 @@ func (v *Muxer) handle(c net.Conn) {
 	xl := xlog.FromContextSafe(l.ctx)
 	if v.successHook != nil {
 		if err := v.successHook(c, reqInfoMap); err != nil {
-			xl.Infof("success func failure on vhost connection: %v", err)
+			xl.Infof("successHook 在 vHost 连接时失败: %v", err)
 			_ = c.Close()
 			return
 		}
@@ -234,7 +234,7 @@ func (v *Muxer) handle(c net.Conn) {
 	if l.mux.checkAuth != nil && l.username != "" {
 		ok, err := l.mux.checkAuth(c, l.username, l.password, reqInfoMap)
 		if !ok || err != nil {
-			xl.Debugf("auth failed for user: %s", l.username)
+			xl.Debugf("用户 %s 验证失败", l.username)
 			_ = c.Close()
 			return
 		}
@@ -246,12 +246,12 @@ func (v *Muxer) handle(c net.Conn) {
 	}
 	c = sConn
 
-	xl.Debugf("new request host [%s] path [%s] httpUser [%s]", name, path, httpUser)
+	xl.Debugf("新请求主机名 [%s] 路径 [%s] 用户 [%s]", name, path, httpUser)
 	err = errors.PanicToError(func() {
 		l.accept <- c
 	})
 	if err != nil {
-		xl.Warnf("listener is already closed, ignore this request")
+		xl.Warnf("监听器已关闭, 忽略此请求")
 	}
 }
 
@@ -271,7 +271,7 @@ func (l *Listener) Accept() (net.Conn, error) {
 	xl := xlog.FromContextSafe(l.ctx)
 	conn, ok := <-l.accept
 	if !ok {
-		return nil, fmt.Errorf("Listener closed")
+		return nil, fmt.Errorf("监听器已关闭")
 	}
 
 	// if rewriteHost func is exist
@@ -280,10 +280,10 @@ func (l *Listener) Accept() (net.Conn, error) {
 	if l.mux.rewriteHost != nil {
 		sConn, err := l.mux.rewriteHost(conn, l.rewriteHost)
 		if err != nil {
-			xl.Warnf("host header rewrite failed: %v", err)
-			return nil, fmt.Errorf("host header rewrite failed")
+			xl.Warnf("Host-Header-Rewrite 失败: %v", err)
+			return nil, fmt.Errorf("Host-Header-Rewrite 失败")
 		}
-		xl.Debugf("rewrite host to [%s] success", l.rewriteHost)
+		xl.Debugf("Host-Header-Rewrite 成功修改为 [%s]", l.rewriteHost)
 		conn = sConn
 	}
 	return netpkg.NewContextConn(l.ctx, conn), nil

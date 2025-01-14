@@ -218,7 +218,7 @@ func ListenUDP(bindAddr string, bindPort int) (l *UDPListener, err error) {
 func (l *UDPListener) writeUDPPacket(packet *UDPPacket) (err error) {
 	defer func() {
 		if errRet := recover(); errRet != nil {
-			err = fmt.Errorf("udp write closed listener")
+			err = fmt.Errorf("UDP 监听器写入关闭")
 		}
 	}()
 	l.writeCh <- packet
@@ -238,7 +238,7 @@ func (l *UDPListener) WriteMsg(buf []byte, remoteAddr *net.UDPAddr) (err error) 
 func (l *UDPListener) Accept() (net.Conn, error) {
 	conn, ok := <-l.acceptCh
 	if !ok {
-		return conn, fmt.Errorf("channel for udp listener closed")
+		return conn, fmt.Errorf("UDP 监听器通道关闭")
 	}
 	return conn, nil
 }

@@ -30,10 +30,10 @@ func init() {
 
 var verifyCmd = &cobra.Command{
 	Use:   "verify",
-	Short: "Verify that the configures is valid",
+	Short: "验证配置文件是否有效",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cfgFile == "" {
-			fmt.Println("frpc: the configuration file is not specified")
+			fmt.Println("ME Frp 客户端: 未指定配置文件")
 			return nil
 		}
 
@@ -51,7 +51,7 @@ var verifyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("frpc: the configuration file %s syntax is ok\n", cfgFile)
+		fmt.Printf("ME Frp 客户端: 配置文件 %s 语法正确\n", cfgFile)
 		return nil
 	},
 }

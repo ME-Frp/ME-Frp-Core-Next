@@ -86,7 +86,7 @@ func (q *BandwidthQuantity) UnmarshalString(s string) error {
 			return err
 		}
 	default:
-		return errors.New("unit not support")
+		return errors.New("不支持的数据单位 [" + s + "]")
 	}
 
 	q.s = s
@@ -154,25 +154,25 @@ func NewPortsRangeSliceFromString(str string) ([]PortsRange, error) {
 			// single number
 			singleNum, err := strconv.ParseInt(strings.TrimSpace(numArray[0]), 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("range number is invalid, %v", err)
+				return nil, fmt.Errorf("端口范围无效, %v", err)
 			}
 			out = append(out, PortsRange{Single: int(singleNum)})
 		case 2:
 			// range numbers
 			minNum, err := strconv.ParseInt(strings.TrimSpace(numArray[0]), 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("range number is invalid, %v", err)
+				return nil, fmt.Errorf("端口范围无效, %v", err)
 			}
 			maxNum, err := strconv.ParseInt(strings.TrimSpace(numArray[1]), 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("range number is invalid, %v", err)
+				return nil, fmt.Errorf("端口范围无效, %v", err)
 			}
 			if maxNum < minNum {
-				return nil, fmt.Errorf("range number is invalid")
+				return nil, fmt.Errorf("端口范围无效, 最小端口大于最大端口")
 			}
 			out = append(out, PortsRange{Start: int(minNum), End: int(maxNum)})
 		default:
-			return nil, fmt.Errorf("range number is invalid")
+			return nil, fmt.Errorf("端口范围无效")
 		}
 	}
 	return out, nil

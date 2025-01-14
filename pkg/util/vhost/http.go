@@ -129,7 +129,7 @@ func NewHTTPReverseProxy(option HTTPReverseProxyOptions, vhostRouter *Routers) *
 		BufferPool: pool.NewBuffer(32 * 1024),
 		ErrorLog:   stdlog.New(log.NewWriteLogger(log.WarnLevel, 2), "", 0),
 		ErrorHandler: func(rw http.ResponseWriter, req *http.Request, err error) {
-			log.Logf(log.WarnLevel, 1, "do http proxy request [host: %s] error: %v", req.Host, err)
+			log.Logf(log.WarnLevel, 1, "HTTP 隧道请求 [host: %s] 错误: %v", req.Host, err)
 			if err != nil {
 				if e, ok := err.(net.Error); ok && e.Timeout() {
 					rw.WriteHeader(http.StatusGatewayTimeout)
@@ -162,7 +162,7 @@ func (rp *HTTPReverseProxy) UnRegister(routeCfg RouteConfig) {
 func (rp *HTTPReverseProxy) GetRouteConfig(domain, location, routeByHTTPUser string) *RouteConfig {
 	vr, ok := rp.getVhost(domain, location, routeByHTTPUser)
 	if ok {
-		log.Debugf("get new HTTP request host [%s] path [%s] httpuser [%s]", domain, location, routeByHTTPUser)
+		log.Debugf("获取新的 HTTP 请求主机 [%s] 路径 [%s] HTTP 用户 [%s]", domain, location, routeByHTTPUser)
 		return vr.payload.(*RouteConfig)
 	}
 	return nil

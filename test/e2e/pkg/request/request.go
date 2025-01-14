@@ -158,11 +158,11 @@ func (r *Request) Do() (*Response, error) {
 	// for protocol tcp and udp
 	if len(r.proxyURL) > 0 {
 		if r.protocol != "tcp" {
-			return nil, fmt.Errorf("only tcp protocol is allowed for proxy")
+			return nil, fmt.Errorf("仅支持 TCP 协议的隧道")
 		}
 		proxyType, proxyAddress, auth, err := libnet.ParseProxyURL(r.proxyURL)
 		if err != nil {
-			return nil, fmt.Errorf("parse ProxyURL error: %v", err)
+			return nil, fmt.Errorf("解析 ProxyURL 错误: %v", err)
 		}
 		conn, err = libnet.Dial(addr, libnet.WithProxy(proxyType, proxyAddress), libnet.WithProxyAuth(auth))
 		if err != nil {
@@ -176,7 +176,7 @@ func (r *Request) Do() (*Response, error) {
 		case "udp":
 			conn, err = dialer.Dial("udp", addr)
 		default:
-			return nil, fmt.Errorf("invalid protocol")
+			return nil, fmt.Errorf("无效的协议")
 		}
 		if err != nil {
 			return nil, err
@@ -257,7 +257,7 @@ func (r *Request) sendHTTPRequest(method, urlstr string, host string, headers ma
 func (r *Request) sendRequestByConn(c net.Conn, content []byte) ([]byte, error) {
 	_, err := rpc.WriteBytes(c, content)
 	if err != nil {
-		return nil, fmt.Errorf("write error: %v", err)
+		return nil, fmt.Errorf("写入错误: %v", err)
 	}
 
 	var reader io.Reader = c
@@ -267,7 +267,7 @@ func (r *Request) sendRequestByConn(c net.Conn, content []byte) ([]byte, error) 
 
 	buf, err := rpc.ReadBytes(reader)
 	if err != nil {
-		return nil, fmt.Errorf("read error: %v", err)
+		return nil, fmt.Errorf("读取错误: %v", err)
 	}
 	return buf, nil
 }

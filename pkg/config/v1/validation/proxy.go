@@ -27,17 +27,17 @@ import (
 
 func validateProxyBaseConfigForClient(c *v1.ProxyBaseConfig) error {
 	if c.Name == "" {
-		return errors.New("name should not be empty")
+		return errors.New("隧道名不能为空")
 	}
 
 	if err := ValidateAnnotations(c.Annotations); err != nil {
 		return err
 	}
 	if !slices.Contains([]string{"", "v1", "v2"}, c.Transport.ProxyProtocolVersion) {
-		return fmt.Errorf("not support proxy protocol version: %s", c.Transport.ProxyProtocolVersion)
+		return fmt.Errorf("不支持的 Proxy Protocol Version: %s", c.Transport.ProxyProtocolVersion)
 	}
 	if !slices.Contains([]string{"client", "server"}, c.Transport.BandwidthLimitMode) {
-		return fmt.Errorf("bandwidth limit mode should be client or server")
+		return fmt.Errorf("带宽限制模式应为 client 或 server")
 	}
 
 	if c.Plugin.Type == "" {
@@ -47,18 +47,18 @@ func validateProxyBaseConfigForClient(c *v1.ProxyBaseConfig) error {
 	}
 
 	if !slices.Contains([]string{"", "tcp", "http"}, c.HealthCheck.Type) {
-		return fmt.Errorf("not support health check type: %s", c.HealthCheck.Type)
+		return fmt.Errorf("不支持的 HealthCheck 类型: %s", c.HealthCheck.Type)
 	}
 	if c.HealthCheck.Type != "" {
 		if c.HealthCheck.Type == "http" &&
 			c.HealthCheck.Path == "" {
-			return fmt.Errorf("health check path should not be empty")
+			return fmt.Errorf("HealthCheck 路径不能为空")
 		}
 	}
 
 	if c.Plugin.Type != "" {
 		if err := ValidateClientPluginOptions(c.Plugin.ClientPluginOptions); err != nil {
-			return fmt.Errorf("plugin %s: %v", c.Plugin.Type, err)
+			return fmt.Errorf("Plugin %s: %v", c.Plugin.Type, err)
 		}
 	}
 	return nil
@@ -73,7 +73,7 @@ func validateProxyBaseConfigForServer(c *v1.ProxyBaseConfig) error {
 
 func validateDomainConfigForClient(c *v1.DomainConfig) error {
 	if c.SubDomain == "" && len(c.CustomDomains) == 0 {
-		return errors.New("subdomain and custom domains should not be both empty")
+		return errors.New("subdomain 和 custom domains 不能同时为空")
 	}
 	return nil
 }
@@ -82,18 +82,18 @@ func validateDomainConfigForServer(c *v1.DomainConfig, s *v1.ServerConfig) error
 	for _, domain := range c.CustomDomains {
 		if s.SubDomainHost != "" && len(strings.Split(s.SubDomainHost, ".")) < len(strings.Split(domain, ".")) {
 			if strings.Contains(domain, s.SubDomainHost) {
-				return fmt.Errorf("custom domain [%s] should not belong to subdomain host [%s]", domain, s.SubDomainHost)
+				return fmt.Errorf("custom domain [%s] 不能和 subdomain host [%s] 相同", domain, s.SubDomainHost)
 			}
 		}
 	}
 
 	if c.SubDomain != "" {
 		if s.SubDomainHost == "" {
-			return errors.New("subdomain is not supported because this feature is not enabled in server")
+			return errors.New("subdomain 未在服务端启用")
 		}
 
 		if strings.Contains(c.SubDomain, ".") || strings.Contains(c.SubDomain, "*") {
-			return errors.New("'.' and '*' are not supported in subdomain")
+			return errors.New("subdomain 不能包含 '.' 和 '*'")
 		}
 	}
 	return nil
@@ -123,7 +123,7 @@ func ValidateProxyConfigurerForClient(c v1.ProxyConfigurer) error {
 	case *v1.SUDPProxyConfig:
 		return validateSUDPProxyConfigForClient(v)
 	}
-	return errors.New("unknown proxy config type")
+	return errors.New("未知隧道类型")
 }
 
 func validateTCPProxyConfigForClient(c *v1.TCPProxyConfig) error {
@@ -140,7 +140,7 @@ func validateTCPMuxProxyConfigForClient(c *v1.TCPMuxProxyConfig) error {
 	}
 
 	if !slices.Contains([]string{string(v1.TCPMultiplexerHTTPConnect)}, c.Multiplexer) {
-		return fmt.Errorf("not support multiplexer: %s", c.Multiplexer)
+		return fmt.Errorf("不支持的 Multiplexer: %s", c.Multiplexer)
 	}
 	return nil
 }
@@ -189,7 +189,7 @@ func ValidateProxyConfigurerForServer(c v1.ProxyConfigurer, s *v1.ServerConfig) 
 	case *v1.SUDPProxyConfig:
 		return validateSUDPProxyConfigForServer(v, s)
 	default:
-		return errors.New("unknown proxy config type")
+		return errors.New("未知隧道类型")
 	}
 }
 
@@ -204,7 +204,7 @@ func validateUDPProxyConfigForServer(c *v1.UDPProxyConfig, s *v1.ServerConfig) e
 func validateTCPMuxProxyConfigForServer(c *v1.TCPMuxProxyConfig, s *v1.ServerConfig) error {
 	if c.Multiplexer == string(v1.TCPMultiplexerHTTPConnect) &&
 		s.TCPMuxHTTPConnectPort == 0 {
-		return fmt.Errorf("tcpmux with multiplexer httpconnect not supported because this feature is not enabled in server")
+		return fmt.Errorf("包含 Multiplexer HTTPConnect 的 [TCPMux] 隧道未在服务端启用")
 	}
 
 	return validateDomainConfigForServer(&c.DomainConfig, s)
@@ -212,7 +212,7 @@ func validateTCPMuxProxyConfigForServer(c *v1.TCPMuxProxyConfig, s *v1.ServerCon
 
 func validateHTTPProxyConfigForServer(c *v1.HTTPProxyConfig, s *v1.ServerConfig) error {
 	if s.VhostHTTPPort == 0 {
-		return fmt.Errorf("type [http] not supported when vhost http port is not set")
+		return fmt.Errorf("[http] 协议的隧道未在服务端启用")
 	}
 
 	return validateDomainConfigForServer(&c.DomainConfig, s)
@@ -220,7 +220,7 @@ func validateHTTPProxyConfigForServer(c *v1.HTTPProxyConfig, s *v1.ServerConfig)
 
 func validateHTTPSProxyConfigForServer(c *v1.HTTPSProxyConfig, s *v1.ServerConfig) error {
 	if s.VhostHTTPSPort == 0 {
-		return fmt.Errorf("type [https] not supported when vhost https port is not set")
+		return fmt.Errorf("[https] 协议的隧道未在服务端启用")
 	}
 
 	return validateDomainConfigForServer(&c.DomainConfig, s)
@@ -247,7 +247,7 @@ func ValidateAnnotations(annotations map[string]string) error {
 	var errs error
 	for k := range annotations {
 		for _, msg := range validation.IsQualifiedName(strings.ToLower(k)) {
-			errs = AppendError(errs, fmt.Errorf("annotation key %s is invalid: %s", k, msg))
+			errs = AppendError(errs, fmt.Errorf("Annotation Key %s 无效: %s", k, msg))
 		}
 	}
 	if err := ValidateAnnotationsSize(annotations); err != nil {
@@ -264,7 +264,7 @@ func ValidateAnnotationsSize(annotations map[string]string) error {
 		totalSize += (int64)(len(k)) + (int64)(len(v))
 	}
 	if totalSize > (int64)(TotalAnnotationSizeLimitB) {
-		return fmt.Errorf("annotations size %d is larger than limit %d", totalSize, TotalAnnotationSizeLimitB)
+		return fmt.Errorf("Annotations Size %d 大于限制 %d", totalSize, TotalAnnotationSizeLimitB)
 	}
 	return nil
 }

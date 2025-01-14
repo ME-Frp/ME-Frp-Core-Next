@@ -103,7 +103,7 @@ func (s *TunnelServer) Run() error {
 			return nil
 		}
 		s.writeToClient(err.Error())
-		return fmt.Errorf("parse flags from ssh client error: %v", err)
+		return fmt.Errorf("从 SSH 客户端解析标志错误: %v", err)
 	}
 	clientCfg.Complete()
 	if sshConn.Permissions != nil {
@@ -123,7 +123,7 @@ func (s *TunnelServer) Run() error {
 			// join workConn and ssh channel
 			c, err := s.openConn(addr)
 			if err != nil {
-				log.Tracef("open conn error: %v", err)
+				log.Tracef("打开连接错误: %v", err)
 				workConn.Close()
 				return false
 			}
@@ -167,7 +167,7 @@ func (s *TunnelServer) Run() error {
 
 	if ps, err := s.waitProxyStatusReady(pc.GetBaseConfig().Name, time.Second); err != nil {
 		s.writeToClient(err.Error())
-		log.Warnf("wait proxy status ready error: %v", err)
+		log.Warnf("等待隧道就绪错误: %v", err)
 	} else {
 		// success
 		s.writeToClient(createSuccessInfo(clientCfg.User, pc, ps))
@@ -175,7 +175,7 @@ func (s *TunnelServer) Run() error {
 	}
 
 	s.vc.Close()
-	log.Tracef("ssh tunnel connection from %v closed", sshConn.RemoteAddr())
+	log.Tracef("SSH 隧道连接从 %v 关闭", sshConn.RemoteAddr())
 	s.closeDoneChOnce.Do(func() {
 		_ = sshConn.Close()
 		close(s.doneCh)
@@ -238,7 +238,7 @@ func (s *TunnelServer) waitForwardAddrAndExtraPayload(
 		case extra := <-extraPayloadCh:
 			extraPayload = extra
 		case <-timer.C:
-			return nil, "", fmt.Errorf("get addr and extra payload timeout")
+			return nil, "", fmt.Errorf("获取地址和额外 Payload 超时")
 		}
 		if addr != nil && extraPayload != "" {
 			break
@@ -258,16 +258,16 @@ func (s *TunnelServer) parseClientAndProxyConfigurer(_ *tcpipForward, extraPaylo
 
 	args := strings.Split(extraPayload, " ")
 	if len(args) < 1 {
-		return nil, nil, helpMessage, fmt.Errorf("invalid extra payload")
+		return nil, nil, helpMessage, fmt.Errorf("无效的额外 Payload")
 	}
 	proxyType := strings.TrimSpace(args[0])
 	supportTypes := []string{"tcp", "http", "https", "tcpmux", "stcp"}
 	if !slices.Contains(supportTypes, proxyType) {
-		return nil, nil, helpMessage, fmt.Errorf("invalid proxy type: %s, support types: %v", proxyType, supportTypes)
+		return nil, nil, helpMessage, fmt.Errorf("无效的隧道类型: %s, 支持的类型: %v", proxyType, supportTypes)
 	}
 	pc := v1.NewProxyConfigurerByType(v1.ProxyType(proxyType))
 	if pc == nil {
-		return nil, nil, helpMessage, fmt.Errorf("new proxy configurer error")
+		return nil, nil, helpMessage, fmt.Errorf("创建隧道配置器错误")
 	}
 	config.RegisterProxyFlags(cmd, pc, config.WithSSHMode())
 
@@ -285,7 +285,7 @@ func (s *TunnelServer) parseClientAndProxyConfigurer(_ *tcpipForward, extraPaylo
 	if pc.GetBaseConfig().Name == "" {
 		id, err := util.RandIDWithLen(8)
 		if err != nil {
-			return nil, nil, helpMessage, fmt.Errorf("generate random id error: %v", err)
+			return nil, nil, helpMessage, fmt.Errorf("生成随机 ID 错误: %v", err)
 		}
 		pc.GetBaseConfig().Name = fmt.Sprintf("sshtunnel-%s-%s", proxyType, id)
 	}
@@ -348,7 +348,7 @@ func (s *TunnelServer) openConn(addr *tcpipForward) (net.Conn, error) {
 	}
 	channel, reqs, err := s.sshConn.OpenChannel(ChannelTypeServerOpenChannel, ssh.Marshal(&payload))
 	if err != nil {
-		return nil, fmt.Errorf("open ssh channel error: %v", err)
+		return nil, fmt.Errorf("打开 SSH 通道错误: %v", err)
 	}
 	go ssh.DiscardRequests(reqs)
 
@@ -379,9 +379,9 @@ func (s *TunnelServer) waitProxyStatusReady(name string, timeout time.Duration) 
 				return ps, errors.New(ps.Err)
 			}
 		case <-timer.C:
-			return nil, fmt.Errorf("wait proxy status ready timeout")
+			return nil, fmt.Errorf("等待隧道就绪超时")
 		case <-s.doneCh:
-			return nil, fmt.Errorf("ssh tunnel server closed")
+			return nil, fmt.Errorf("SSH 隧道服务器关闭")
 		}
 	}
 }

@@ -16,7 +16,7 @@ import (
 var _ = ginkgo.Describe("[Feature: Monitor]", func() {
 	f := framework.NewDefaultFramework()
 
-	ginkgo.It("Prometheus metrics", func() {
+	ginkgo.It("Prometheus 指标", func() {
 		dashboardPort := f.AllocPort()
 		serverConf := consts.DefaultServerConfig + fmt.Sprintf(`
 		enablePrometheus = true
@@ -42,7 +42,7 @@ var _ = ginkgo.Describe("[Feature: Monitor]", func() {
 		framework.NewRequestExpect(f).RequestModify(func(r *request.Request) {
 			r.HTTP().Port(dashboardPort).HTTPPath("/metrics")
 		}).Ensure(func(resp *request.Response) bool {
-			log.Tracef("prometheus metrics response: \n%s", resp.Content)
+			log.Tracef("Prometheus 指标响应: \n%s", resp.Content)
 			if resp.Code != 200 {
 				return false
 			}

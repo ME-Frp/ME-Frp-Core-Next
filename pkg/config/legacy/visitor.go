@@ -170,16 +170,16 @@ func NewVisitorConfFromIni(prefix string, name string, section *ini.Section) (Vi
 	visitorType := VisitorType(section.Key("type").String())
 
 	if visitorType == "" {
-		return nil, fmt.Errorf("type shouldn't be empty")
+		return nil, fmt.Errorf("访问者类型不能为空")
 	}
 
 	conf := DefaultVisitorConf(visitorType)
 	if conf == nil {
-		return nil, fmt.Errorf("type [%s] error", visitorType)
+		return nil, fmt.Errorf("访问者类型 [%s] 错误", visitorType)
 	}
 
 	if err := conf.UnmarshalFromIni(prefix, name, section); err != nil {
-		return nil, fmt.Errorf("type [%s] error", visitorType)
+		return nil, fmt.Errorf("访问者类型 [%s] 错误: %v", visitorType, err)
 	}
 	return conf, nil
 }

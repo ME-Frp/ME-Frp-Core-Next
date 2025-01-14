@@ -43,7 +43,7 @@ func (c *Client) GetProxyStatus(ctx context.Context, name string) (*client.Proxy
 	}
 	allStatus := make(client.StatusResp)
 	if err = json.Unmarshal([]byte(content), &allStatus); err != nil {
-		return nil, fmt.Errorf("unmarshal http response error: %s", strings.TrimSpace(content))
+		return nil, fmt.Errorf("处理 HTTP 响应错误: %s", strings.TrimSpace(content))
 	}
 	for _, pss := range allStatus {
 		for _, ps := range pss {
@@ -52,7 +52,7 @@ func (c *Client) GetProxyStatus(ctx context.Context, name string) (*client.Proxy
 			}
 		}
 	}
-	return nil, fmt.Errorf("no proxy status found")
+	return nil, fmt.Errorf("未找到隧道状态")
 }
 
 func (c *Client) GetAllProxyStatus(ctx context.Context) (client.StatusResp, error) {
@@ -66,7 +66,7 @@ func (c *Client) GetAllProxyStatus(ctx context.Context) (client.StatusResp, erro
 	}
 	allStatus := make(client.StatusResp)
 	if err = json.Unmarshal([]byte(content), &allStatus); err != nil {
-		return nil, fmt.Errorf("unmarshal http response error: %s", strings.TrimSpace(content))
+		return nil, fmt.Errorf("处理 HTTP 响应错误: %s", strings.TrimSpace(content))
 	}
 	return allStatus, nil
 }
@@ -130,7 +130,7 @@ func (c *Client) do(req *http.Request) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("api status code [%d]", resp.StatusCode)
+		return "", fmt.Errorf("API 状态码 [%d]", resp.StatusCode)
 	}
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {

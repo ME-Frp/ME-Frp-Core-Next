@@ -141,13 +141,13 @@ func (pxy *BaseProxy) HandleTCPWorkConnection(workConn net.Conn, m *msg.StartWor
 		})
 	}
 
-	xl.Tracef("handle tcp work connection, useEncryption: %t, useCompression: %t",
+	xl.Tracef("处理 TCP 工作连接, 数据加密: %t, 数据压缩: %t",
 		baseCfg.Transport.UseEncryption, baseCfg.Transport.UseCompression)
 	if baseCfg.Transport.UseEncryption {
 		remote, err = libio.WithEncryption(remote, encKey)
 		if err != nil {
 			workConn.Close()
-			xl.Errorf("create encryption stream error: %v", err)
+			xl.Errorf("创建加密流错误: %v", err)
 			return
 		}
 	}
@@ -191,9 +191,9 @@ func (pxy *BaseProxy) HandleTCPWorkConnection(workConn net.Conn, m *msg.StartWor
 
 	if pxy.proxyPlugin != nil {
 		// if plugin is set, let plugin handle connection first
-		xl.Debugf("handle by plugin: %s", pxy.proxyPlugin.Name())
+		xl.Debugf("通过 Plugin 处理: %s", pxy.proxyPlugin.Name())
 		pxy.proxyPlugin.Handle(pxy.ctx, remote, workConn, &extraInfo)
-		xl.Debugf("handle by plugin finished")
+		xl.Debugf("通过 Plugin 处理完成")
 		return
 	}
 
@@ -203,7 +203,7 @@ func (pxy *BaseProxy) HandleTCPWorkConnection(workConn net.Conn, m *msg.StartWor
 	)
 	if err != nil {
 		workConn.Close()
-		xl.Errorf("connect to local service [%s:%d] error: %v", baseCfg.LocalIP, baseCfg.LocalPort, err)
+		xl.Errorf("连接到本地服务 [%s:%d] 错误: %v\n请检查本地服务是否正常启动", baseCfg.LocalIP, baseCfg.LocalPort, err)
 		return
 	}
 
@@ -213,7 +213,7 @@ func (pxy *BaseProxy) HandleTCPWorkConnection(workConn net.Conn, m *msg.StartWor
 	if extraInfo.ProxyProtocolHeader != nil {
 		if _, err := extraInfo.ProxyProtocolHeader.WriteTo(localConn); err != nil {
 			workConn.Close()
-			xl.Errorf("write proxy protocol header to local conn error: %v", err)
+			xl.Errorf("写入 Proxy Protocol Header 到本地连接错误: %v", err)
 			return
 		}
 	}

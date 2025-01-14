@@ -122,7 +122,7 @@ func (ctl *Control) handleReqWorkConn(_ msg.Message) {
 	xl := ctl.xl
 	workConn, err := ctl.connectServer()
 	if err != nil {
-		xl.Warnf("start new connection to server error: %v", err)
+		xl.Warnf("启动新连接到服务器错误: %v", err)
 		return
 	}
 
@@ -130,24 +130,24 @@ func (ctl *Control) handleReqWorkConn(_ msg.Message) {
 		RunID: ctl.sessionCtx.RunID,
 	}
 	if err = ctl.sessionCtx.AuthSetter.SetNewWorkConn(m); err != nil {
-		xl.Warnf("error during NewWorkConn authentication: %v", err)
+		xl.Warnf("NewWorkConn 认证错误: %v", err)
 		workConn.Close()
 		return
 	}
 	if err = msg.WriteMsg(workConn, m); err != nil {
-		xl.Warnf("work connection write to server error: %v", err)
+		xl.Warnf("工作连接写入服务器错误: %v", err)
 		workConn.Close()
 		return
 	}
 
 	var startMsg msg.StartWorkConn
 	if err = msg.ReadMsgInto(workConn, &startMsg); err != nil {
-		xl.Tracef("work connection closed before response StartWorkConn message: %v", err)
+		xl.Tracef("工作连接在响应 StartWorkConn 消息之前关闭: %v", err)
 		workConn.Close()
 		return
 	}
 	if startMsg.Error != "" {
-		xl.Errorf("StartWorkConn contains error: %s", startMsg.Error)
+		xl.Errorf("StartWorkConn 包含错误: %s", startMsg.Error)
 		workConn.Close()
 		return
 	}
@@ -163,9 +163,9 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 	// Start a new proxy handler if no error got
 	err := ctl.pm.StartProxy(inMsg.ProxyName, inMsg.RemoteAddr, inMsg.Error)
 	if err != nil {
-		xl.Warnf("[%s] start error: %v", inMsg.ProxyName, err)
+		xl.Warnf("[%s] 启动隧道失败: %v", inMsg.ProxyName, err)
 	} else {
-		xl.Infof("[%s] start proxy success", inMsg.ProxyName)
+		xl.Infof("[%s] 启动隧道成功", inMsg.ProxyName)
 	}
 }
 
@@ -176,7 +176,7 @@ func (ctl *Control) handleNatHoleResp(m msg.Message) {
 	// Dispatch the NatHoleResp message to the related proxy.
 	ok := ctl.msgTransporter.DispatchWithType(inMsg, msg.TypeNameNatHoleResp, inMsg.TransactionID)
 	if !ok {
-		xl.Tracef("dispatch NatHoleResp message to related proxy error")
+		xl.Tracef("分发 NatHoleResp 消息到相关隧道错误")
 	}
 }
 
@@ -185,12 +185,12 @@ func (ctl *Control) handlePong(m msg.Message) {
 	inMsg := m.(*msg.Pong)
 
 	if inMsg.Error != "" {
-		xl.Errorf("Pong message contains error: %s", inMsg.Error)
+		xl.Errorf("Pong 消息包含错误: %s", inMsg.Error)
 		ctl.closeSession()
 		return
 	}
 	ctl.lastPong.Store(time.Now())
-	xl.Debugf("receive heartbeat from server")
+	xl.Debugf("收到服务端心跳")
 }
 
 // closeSession closes the control connection.
@@ -237,10 +237,10 @@ func (ctl *Control) heartbeatWorker() {
 	if ctl.sessionCtx.Common.Transport.HeartbeatInterval > 0 {
 		// Send heartbeat to server.
 		sendHeartBeat := func() (bool, error) {
-			xl.Debugf("send heartbeat to server")
+			xl.Debugf("发送心跳到服务端")
 			pingMsg := &msg.Ping{}
 			if err := ctl.sessionCtx.AuthSetter.SetPing(pingMsg); err != nil {
-				xl.Warnf("error during ping authentication: %v, skip sending ping message", err)
+				xl.Warnf("Ping 认证错误: %v, 跳过发送 Ping 消息", err)
 				return false, err
 			}
 			_ = ctl.msgDispatcher.Send(pingMsg)
@@ -263,7 +263,7 @@ func (ctl *Control) heartbeatWorker() {
 	if ctl.sessionCtx.Common.Transport.HeartbeatInterval > 0 && ctl.sessionCtx.Common.Transport.HeartbeatTimeout > 0 {
 		go wait.Until(func() {
 			if time.Since(ctl.lastPong.Load().(time.Time)) > time.Duration(ctl.sessionCtx.Common.Transport.HeartbeatTimeout)*time.Second {
-				xl.Warnf("heartbeat timeout")
+				xl.Warnf("心跳超时")
 				ctl.closeSession()
 				return
 			}

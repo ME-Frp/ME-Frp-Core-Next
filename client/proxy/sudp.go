@@ -81,7 +81,7 @@ func (pxy *SUDPProxy) Close() {
 
 func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 	xl := pxy.xl
-	xl.Infof("incoming a new work connection for sudp proxy, %s", conn.RemoteAddr().String())
+	xl.Infof("收到新的 SUDP 隧道工作连接, %s", conn.RemoteAddr().String())
 
 	var rwc io.ReadWriteCloser = conn
 	var err error
@@ -94,7 +94,7 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 		rwc, err = libio.WithEncryption(rwc, []byte(pxy.clientCfg.Auth.Token))
 		if err != nil {
 			conn.Close()
-			xl.Errorf("create encryption stream error: %v", err)
+			xl.Errorf("创建加密流错误: %v", err)
 			return
 		}
 	}
@@ -133,21 +133,21 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 			// first to check sudp proxy is closed or not
 			select {
 			case <-pxy.closeCh:
-				xl.Tracef("frpc sudp proxy is closed")
+				xl.Tracef("ME Frp 客户端 SUDP 隧道已关闭")
 				return
 			default:
 			}
 
 			var udpMsg msg.UDPPacket
 			if errRet := msg.ReadMsgInto(conn, &udpMsg); errRet != nil {
-				xl.Warnf("read from workConn for sudp error: %v", errRet)
+				xl.Warnf("从工作连接读取数据错误: %v", errRet)
 				return
 			}
 
 			if errRet := errors.PanicToError(func() {
 				readCh <- &udpMsg
 			}); errRet != nil {
-				xl.Warnf("reader goroutine for sudp work connection closed: %v", errRet)
+				xl.Warnf("从工作连接读取数据错误: %v", errRet)
 				return
 			}
 		}
@@ -157,21 +157,21 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 	workConnSenderFn := func(conn net.Conn, sendCh chan msg.Message) {
 		defer func() {
 			closeFn()
-			xl.Infof("writer goroutine for sudp work connection closed")
+			xl.Infof("客户端 SUDP 隧道工作连接写入数据线程已关闭")
 		}()
 
 		var errRet error
 		for rawMsg := range sendCh {
 			switch m := rawMsg.(type) {
 			case *msg.UDPPacket:
-				xl.Tracef("frpc send udp package to frpc visitor, [udp local: %v, remote: %v], [tcp work conn local: %v, remote: %v]",
+				xl.Tracef("客户端发送 UDP 数据包到访问者, [udp 本地: %v, 远程: %v], [tcp 工作连接 本地: %v, 远程: %v]",
 					m.LocalAddr.String(), m.RemoteAddr.String(), conn.LocalAddr().String(), conn.RemoteAddr().String())
 			case *msg.Ping:
-				xl.Tracef("frpc send ping message to frpc visitor")
+				xl.Tracef("客户端发送 Ping 消息到访问者")
 			}
 
 			if errRet = msg.WriteMsg(conn, rawMsg); errRet != nil {
-				xl.Errorf("sudp work write error: %v", errRet)
+				xl.Errorf("SUDP 隧道工作连接写入数据错误: %v", errRet)
 				return
 			}
 		}

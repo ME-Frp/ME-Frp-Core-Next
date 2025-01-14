@@ -134,7 +134,7 @@ func (c *discoverConn) doSTUNRequest(addr string) (*stunResponse, error) {
 			return nil, err
 		}
 	case <-time.After(responseTimeout):
-		return nil, fmt.Errorf("wait response from stun server timeout")
+		return nil, fmt.Errorf("等待 STUN 服务器响应超时")
 	}
 	xorAddrGetter := &stun.XORMappedAddress{}
 	mappedAddrGetter := &stun.MappedAddress{}
@@ -163,7 +163,7 @@ func (c *discoverConn) discoverFromStunServer(addr string) ([]string, error) {
 		return nil, err
 	}
 	if resp.externalAddr == "" {
-		return nil, fmt.Errorf("no external address found")
+		return nil, fmt.Errorf("未找到外部地址")
 	}
 
 	externalAddrs := make([]string, 0, 2)

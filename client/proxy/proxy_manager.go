@@ -62,7 +62,7 @@ func (pm *Manager) StartProxy(name string, remoteAddr string, serverRespErr stri
 	pxy, ok := pm.proxies[name]
 	pm.mu.RUnlock()
 	if !ok {
-		return fmt.Errorf("proxy [%s] not found", name)
+		return fmt.Errorf("隧道 [%s] 未找到", name)
 	}
 
 	err := pxy.SetRunningStatus(remoteAddr, serverRespErr)
@@ -152,7 +152,7 @@ func (pm *Manager) UpdateAll(proxyCfgs []v1.ProxyConfigurer) {
 		}
 	}
 	if len(delPxyNames) > 0 {
-		xl.Infof("proxy removed: %s", delPxyNames)
+		xl.Infof("隧道已移除: %s", delPxyNames)
 	}
 
 	addPxyNames := make([]string, 0)
@@ -170,6 +170,6 @@ func (pm *Manager) UpdateAll(proxyCfgs []v1.ProxyConfigurer) {
 		}
 	}
 	if len(addPxyNames) > 0 {
-		xl.Infof("proxy added: %s", addPxyNames)
+		xl.Infof("隧道已添加: %s", addPxyNames)
 	}
 }

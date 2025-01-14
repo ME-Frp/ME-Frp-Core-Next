@@ -84,7 +84,7 @@ func NewProxyConfFromIni(prefix, name string, section *ini.Section) (ProxyConf, 
 
 	conf := DefaultProxyConf(proxyType)
 	if conf == nil {
-		return nil, fmt.Errorf("invalid type [%s]", proxyType)
+		return nil, fmt.Errorf("无效的协议 [%s]", proxyType)
 	}
 
 	if err := conf.UnmarshalFromIni(prefix, name, section); err != nil {

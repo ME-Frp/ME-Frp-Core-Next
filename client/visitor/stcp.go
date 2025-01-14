@@ -56,7 +56,7 @@ func (sv *STCPVisitor) worker() {
 	for {
 		conn, err := sv.l.Accept()
 		if err != nil {
-			xl.Warnf("stcp local listener closed")
+			xl.Warnf("STCP 本地监听器已关闭")
 			return
 		}
 		go sv.handleConn(conn)
@@ -68,7 +68,7 @@ func (sv *STCPVisitor) internalConnWorker() {
 	for {
 		conn, err := sv.internalLn.Accept()
 		if err != nil {
-			xl.Warnf("stcp internal listener closed")
+			xl.Warnf("STCP 内部监听器已关闭")
 			return
 		}
 		go sv.handleConn(conn)
@@ -79,7 +79,7 @@ func (sv *STCPVisitor) handleConn(userConn net.Conn) {
 	xl := xlog.FromContextSafe(sv.ctx)
 	defer userConn.Close()
 
-	xl.Debugf("get a new stcp user connection")
+	xl.Debugf("收到新的 STCP 用户连接")
 	visitorConn, err := sv.helper.ConnectServer()
 	if err != nil {
 		return
@@ -97,7 +97,7 @@ func (sv *STCPVisitor) handleConn(userConn net.Conn) {
 	}
 	err = msg.WriteMsg(visitorConn, newVisitorConnMsg)
 	if err != nil {
-		xl.Warnf("send newVisitorConnMsg to server error: %v", err)
+		xl.Warnf("发送 newVisitorConnMsg 到服务器错误: %v", err)
 		return
 	}
 
@@ -105,13 +105,13 @@ func (sv *STCPVisitor) handleConn(userConn net.Conn) {
 	_ = visitorConn.SetReadDeadline(time.Now().Add(10 * time.Second))
 	err = msg.ReadMsgInto(visitorConn, &newVisitorConnRespMsg)
 	if err != nil {
-		xl.Warnf("get newVisitorConnRespMsg error: %v", err)
+		xl.Warnf("获取 newVisitorConnRespMsg 错误: %v", err)
 		return
 	}
 	_ = visitorConn.SetReadDeadline(time.Time{})
 
 	if newVisitorConnRespMsg.Error != "" {
-		xl.Warnf("start new visitor connection error: %s", newVisitorConnRespMsg.Error)
+		xl.Warnf("开始新的用户连接错误: %s", newVisitorConnRespMsg.Error)
 		return
 	}
 
@@ -120,7 +120,7 @@ func (sv *STCPVisitor) handleConn(userConn net.Conn) {
 	if sv.cfg.Transport.UseEncryption {
 		remote, err = libio.WithEncryption(remote, []byte(sv.cfg.SecretKey))
 		if err != nil {
-			xl.Errorf("create encryption stream error: %v", err)
+			xl.Errorf("创建加密流错误: %v", err)
 			return
 		}
 	}

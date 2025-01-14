@@ -39,7 +39,7 @@ func NewInternalListener() *InternalListener {
 func (l *InternalListener) Accept() (net.Conn, error) {
 	conn, ok := <-l.acceptCh
 	if !ok {
-		return nil, fmt.Errorf("listener closed")
+		return nil, fmt.Errorf("监听器关闭")
 	}
 	return conn, nil
 }
@@ -53,7 +53,7 @@ func (l *InternalListener) PutConn(conn net.Conn) error {
 		}
 	})
 	if err != nil {
-		return fmt.Errorf("put conn error: listener is closed")
+		return fmt.Errorf("PUT 连接错误: 监听器关闭")
 	}
 	return nil
 }

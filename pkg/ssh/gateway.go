@@ -75,13 +75,13 @@ func NewGateway(
 	sshConfig.PublicKeyCallback = func(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
 		authorizedKeysMap, err := loadAuthorizedKeysFromFile(cfg.AuthorizedKeysFile)
 		if err != nil {
-			log.Errorf("load authorized keys file error: %v", err)
-			return nil, fmt.Errorf("internal error")
+			log.Errorf("加载授权密钥文件错误: %v", err)
+			return nil, fmt.Errorf("内部错误")
 		}
 
 		user, ok := authorizedKeysMap[string(key.Marshal())]
 		if !ok {
-			return nil, fmt.Errorf("unknown public key for remoteAddr %q", conn.RemoteAddr())
+			return nil, fmt.Errorf("未知的公钥: %q", conn.RemoteAddr())
 		}
 		return &ssh.Permissions{
 			Extensions: map[string]string{
@@ -120,7 +120,7 @@ func (g *Gateway) handleConn(conn net.Conn) {
 		return
 	}
 	if err := ts.Run(); err != nil {
-		log.Errorf("ssh tunnel server run error: %v", err)
+		log.Errorf("SSH 隧道服务器运行错误: %v", err)
 	}
 }
 

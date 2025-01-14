@@ -46,11 +46,11 @@ func (cp *SelfSignedCertGenerator) Generate(commonName string) (*Artifacts, erro
 	if !valid {
 		signingKey, err = NewPrivateKey()
 		if err != nil {
-			return nil, fmt.Errorf("failed to create the CA private key: %v", err)
+			return nil, fmt.Errorf("创建 CA 私钥失败: %v", err)
 		}
 		signingCert, err = cert.NewSelfSignedCACert(cert.Config{CommonName: commonName}, signingKey)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create the CA cert: %v", err)
+			return nil, fmt.Errorf("创建 CA 证书失败: %v", err)
 		}
 	}
 
@@ -65,7 +65,7 @@ func (cp *SelfSignedCertGenerator) Generate(commonName string) (*Artifacts, erro
 
 	key, err := NewPrivateKey()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create the private key: %v", err)
+		return nil, fmt.Errorf("创建私钥失败: %v", err)
 	}
 	signedCert, err := NewSignedCert(
 		cert.Config{
@@ -76,7 +76,7 @@ func (cp *SelfSignedCertGenerator) Generate(commonName string) (*Artifacts, erro
 		key, signingCert, signingKey,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create the cert: %v", err)
+		return nil, fmt.Errorf("创建证书失败: %v", err)
 	}
 	return &Artifacts{
 		Key:    EncodePrivateKeyPEM(key),
@@ -124,10 +124,10 @@ func NewSignedCert(cfg cert.Config, key crypto.Signer, caCert *x509.Certificate,
 		return nil, err
 	}
 	if len(cfg.CommonName) == 0 {
-		return nil, errors.New("must specify a CommonName")
+		return nil, errors.New("必须指定 CommonName")
 	}
 	if len(cfg.Usages) == 0 {
-		return nil, errors.New("must specify at least one ExtKeyUsage")
+		return nil, errors.New("必须指定至少一个 ExtKeyUsage")
 	}
 
 	certTmpl := x509.Certificate{

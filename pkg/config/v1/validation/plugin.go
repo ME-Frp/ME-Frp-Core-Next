@@ -40,42 +40,42 @@ func ValidateClientPluginOptions(c v1.ClientPluginOptions) error {
 
 func validateHTTP2HTTPSPluginOptions(c *v1.HTTP2HTTPSPluginOptions) error {
 	if c.LocalAddr == "" {
-		return errors.New("localAddr is required")
+		return errors.New("localAddr 不能为空")
 	}
 	return nil
 }
 
 func validateHTTPS2HTTPPluginOptions(c *v1.HTTPS2HTTPPluginOptions) error {
 	if c.LocalAddr == "" {
-		return errors.New("localAddr is required")
+		return errors.New("localAddr 不能为空")
 	}
 	return nil
 }
 
 func validateHTTPS2HTTPSPluginOptions(c *v1.HTTPS2HTTPSPluginOptions) error {
 	if c.LocalAddr == "" {
-		return errors.New("localAddr is required")
+		return errors.New("localAddr 不能为空")
 	}
 	return nil
 }
 
 func validateStaticFilePluginOptions(c *v1.StaticFilePluginOptions) error {
 	if c.LocalPath == "" {
-		return errors.New("localPath is required")
+		return errors.New("localPath 不能为空")
 	}
 	return nil
 }
 
 func validateUnixDomainSocketPluginOptions(c *v1.UnixDomainSocketPluginOptions) error {
 	if c.UnixPath == "" {
-		return errors.New("unixPath is required")
+		return errors.New("unixPath 不能为空")
 	}
 	return nil
 }
 
 func validateTLS2RawPluginOptions(c *v1.TLS2RawPluginOptions) error {
 	if c.LocalAddr == "" {
-		return errors.New("localAddr is required")
+		return errors.New("localAddr 不能为空")
 	}
 	return nil
 }

@@ -51,7 +51,7 @@ func (vm *Manager) Listen(name string, sk string, allowUsers []string) (*netpkg.
 	defer vm.mu.Unlock()
 
 	if _, ok := vm.listeners[name]; ok {
-		return nil, fmt.Errorf("custom listener for [%s] is repeated", name)
+		return nil, fmt.Errorf("访问者监听器 [%s] 已存在", name)
 	}
 
 	l := netpkg.NewInternalListener()
@@ -71,19 +71,19 @@ func (vm *Manager) NewConn(name string, conn net.Conn, timestamp int64, signKey 
 
 	if l, ok := vm.listeners[name]; ok {
 		if util.GetAuthKey(l.sk, timestamp) != signKey {
-			err = fmt.Errorf("visitor connection of [%s] auth failed", name)
+			err = fmt.Errorf("访问者连接 [%s] 认证失败", name)
 			return
 		}
 
 		if !slices.Contains(l.allowUsers, visitorUser) && !slices.Contains(l.allowUsers, "*") {
-			err = fmt.Errorf("visitor connection of [%s] user [%s] not allowed", name, visitorUser)
+			err = fmt.Errorf("访问者连接 [%s] 用户 [%s] 不允许", name, visitorUser)
 			return
 		}
 
 		var rwc io.ReadWriteCloser = conn
 		if useEncryption {
 			if rwc, err = libio.WithEncryption(rwc, []byte(l.sk)); err != nil {
-				err = fmt.Errorf("create encryption connection failed: %v", err)
+				err = fmt.Errorf("创建加密连接失败: %v", err)
 				return
 			}
 		}
@@ -92,7 +92,7 @@ func (vm *Manager) NewConn(name string, conn net.Conn, timestamp int64, signKey 
 		}
 		err = l.l.PutConn(netpkg.WrapReadWriteCloserToConn(rwc, conn))
 	} else {
-		err = fmt.Errorf("custom listener for [%s] doesn't exist", name)
+		err = fmt.Errorf("访问者监听器 [%s] 不存在", name)
 		return
 	}
 	return

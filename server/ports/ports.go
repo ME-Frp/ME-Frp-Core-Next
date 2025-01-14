@@ -18,10 +18,10 @@ const (
 )
 
 var (
-	ErrPortAlreadyUsed = errors.New("port already used")
-	ErrPortNotAllowed  = errors.New("port not allowed")
-	ErrPortUnAvailable = errors.New("port unavailable")
-	ErrNoAvailablePort = errors.New("no available port")
+	ErrPortAlreadyUsed = errors.New("端口已被占用")
+	ErrPortNotAllowed  = errors.New("端口不在允许范围内")
+	ErrPortUnAvailable = errors.New("端口当前不可用")
+	ErrNoAvailablePort = errors.New("没有可用的端口")
 )
 
 type PortCtx struct {

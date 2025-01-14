@@ -177,20 +177,20 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 		address := net.JoinHostPort(cfg.ProxyBindAddr, strconv.Itoa(cfg.TCPMuxHTTPConnectPort))
 		l, err = net.Listen("tcp", address)
 		if err != nil {
-			return nil, fmt.Errorf("create server listener error, %v", err)
+			return nil, fmt.Errorf("创建服务器监听器失败, %v", err)
 		}
 
 		svr.rc.TCPMuxHTTPConnectMuxer, err = tcpmux.NewHTTPConnectTCPMuxer(l, cfg.TCPMuxPassthrough, vhostReadWriteTimeout)
 		if err != nil {
-			return nil, fmt.Errorf("create vhost tcpMuxer error, %v", err)
+			return nil, fmt.Errorf("创建 vhost tcpMuxer 失败, %v", err)
 		}
-		log.Infof("tcpmux httpconnect multiplexer listen on %s, passthough: %v", address, cfg.TCPMuxPassthrough)
+		log.Infof("tcpmux HTTPConnect 监听器: %s, PassThrough: %v", address, cfg.TCPMuxPassthrough)
 	}
 
 	// Init all plugins
 	for _, p := range cfg.HTTPPlugins {
 		svr.pluginManager.Register(plugin.NewHTTPPluginOptions(p))
-		log.Infof("plugin [%s] has been registered", p.Name)
+		log.Infof("Plugin [%s] 已被注册", p.Name)
 	}
 	svr.rc.PluginManager = svr.pluginManager
 
@@ -223,7 +223,7 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 	address := net.JoinHostPort(cfg.BindAddr, strconv.Itoa(cfg.BindPort))
 	ln, err := net.Listen("tcp", address)
 	if err != nil {
-		return nil, fmt.Errorf("create server listener error, %v", err)
+		return nil, fmt.Errorf("创建服务器监听器失败, %v", err)
 	}
 
 	svr.muxer = mux.NewMux(ln)
@@ -234,16 +234,16 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 	ln = svr.muxer.DefaultListener()
 
 	svr.listener = ln
-	log.Infof("frps tcp listen on %s", address)
+	log.Infof("ME Frp 服务端 TCP 监听于: %s", address)
 
 	// Listen for accepting connections from client using kcp protocol.
 	if cfg.KCPBindPort > 0 {
 		address := net.JoinHostPort(cfg.BindAddr, strconv.Itoa(cfg.KCPBindPort))
 		svr.kcpListener, err = netpkg.ListenKcp(address)
 		if err != nil {
-			return nil, fmt.Errorf("listen on kcp udp address %s error: %v", address, err)
+			return nil, fmt.Errorf("监听 KCP 地址 %s 失败: %v", address, err)
 		}
-		log.Infof("frps kcp listen on udp %s", address)
+		log.Infof("ME Frp 服务端 KCP 监听于: %s", address)
 	}
 
 	if cfg.QUICBindPort > 0 {
@@ -256,18 +256,18 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 			KeepAlivePeriod:    time.Duration(cfg.Transport.QUIC.KeepalivePeriod) * time.Second,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("listen on quic udp address %s error: %v", address, err)
+			return nil, fmt.Errorf("监听 QUIC 地址 %s 失败: %v", address, err)
 		}
-		log.Infof("frps quic listen on %s", address)
+		log.Infof("ME Frp 服务端 QUIC 监听于: %s", address)
 	}
 
 	if cfg.SSHTunnelGateway.BindPort > 0 {
 		sshGateway, err := ssh.NewGateway(cfg.SSHTunnelGateway, cfg.ProxyBindAddr, svr.sshTunnelListener)
 		if err != nil {
-			return nil, fmt.Errorf("create ssh gateway error: %v", err)
+			return nil, fmt.Errorf("创建 SSH 网关失败: %v", err)
 		}
 		svr.sshTunnelGateway = sshGateway
-		log.Infof("frps sshTunnelGateway listen on port %d", cfg.SSHTunnelGateway.BindPort)
+		log.Infof("ME Frp 服务端 SSH 隧道网关监听于: %d", cfg.SSHTunnelGateway.BindPort)
 	}
 
 	// Listen for accepting connections from client using websocket protocol.
@@ -296,13 +296,13 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 		} else {
 			l, err = net.Listen("tcp", address)
 			if err != nil {
-				return nil, fmt.Errorf("create vhost http listener error, %v", err)
+				return nil, fmt.Errorf("创建 vHost HTTP 监听器失败, %v", err)
 			}
 		}
 		go func() {
 			_ = server.Serve(l)
 		}()
-		log.Infof("http service listen on %s", address)
+		log.Infof("ME Frp 服务端 HTTP 监听于: %s", address)
 	}
 
 	// Create https vhost muxer.
@@ -314,14 +314,14 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 			address := net.JoinHostPort(cfg.ProxyBindAddr, strconv.Itoa(cfg.VhostHTTPSPort))
 			l, err = net.Listen("tcp", address)
 			if err != nil {
-				return nil, fmt.Errorf("create server listener error, %v", err)
+				return nil, fmt.Errorf("创建 vHost HTTPS 监听器失败, %v", err)
 			}
-			log.Infof("https service listen on %s", address)
+			log.Infof("ME Frp 服务端 HTTPS 监听于: %s", address)
 		}
 
 		svr.rc.VhostHTTPSMuxer, err = vhost.NewHTTPSMuxer(l, vhostReadWriteTimeout)
 		if err != nil {
-			return nil, fmt.Errorf("create vhost httpsMuxer error, %v", err)
+			return nil, fmt.Errorf("创建 vHost HTTPS Multiplexer 失败, %v", err)
 		}
 	}
 
@@ -334,7 +334,7 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 	// Create nat hole controller.
 	nc, err := nathole.NewController(time.Duration(cfg.NatHoleAnalysisDataReserveHours) * time.Hour)
 	if err != nil {
-		return nil, fmt.Errorf("create nat hole controller error, %v", err)
+		return nil, fmt.Errorf("创建 NAT 控制器失败, %v", err)
 	}
 	svr.rc.NatHoleController = nc
 	return svr, nil
@@ -348,9 +348,9 @@ func (svr *Service) Run(ctx context.Context) {
 	// run dashboard web server.
 	if svr.webServer != nil {
 		go func() {
-			log.Infof("dashboard listen on %s", svr.webServer.Address())
+			log.Infof("ME Frp 服务端 WebServer 监听于: %s", svr.webServer.Address())
 			if err := svr.webServer.Run(); err != nil {
-				log.Warnf("dashboard server exit with error: %v", err)
+				log.Warnf("ME Frp 服务端 WebServer 因错误退出: %v", err)
 			}
 		}()
 	}
@@ -421,7 +421,7 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn, interna
 
 	_ = conn.SetReadDeadline(time.Now().Add(connReadTimeout))
 	if rawMsg, err = msg.ReadMsg(conn); err != nil {
-		log.Tracef("Failed to read message: %v", err)
+		log.Tracef("读取消息失败: %v", err)
 		conn.Close()
 		return
 	}
@@ -443,10 +443,10 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn, interna
 		// If login failed, send error message there.
 		// Otherwise send success message in control's work goroutine.
 		if err != nil {
-			xl.Warnf("register control error: %v", err)
+			xl.Warnf("注册控制器失败: %v", err)
 			_ = msg.WriteMsg(conn, &msg.LoginResp{
 				Version: version.Full(),
-				Error:   util.GenerateResponseErrorString("register control error", err, lo.FromPtr(svr.cfg.DetailedErrorsToClient)),
+				Error:   util.GenerateResponseErrorString("注册控制器失败", err, lo.FromPtr(svr.cfg.DetailedErrorsToClient)),
 			})
 			conn.Close()
 		}
@@ -456,10 +456,10 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn, interna
 		}
 	case *msg.NewVisitorConn:
 		if err = svr.RegisterVisitorConn(conn, m); err != nil {
-			xl.Warnf("register visitor conn error: %v", err)
+			xl.Warnf("注册访问者连接失败: %v", err)
 			_ = msg.WriteMsg(conn, &msg.NewVisitorConnResp{
 				ProxyName: m.ProxyName,
-				Error:     util.GenerateResponseErrorString("register visitor conn error", err, lo.FromPtr(svr.cfg.DetailedErrorsToClient)),
+				Error:     util.GenerateResponseErrorString("注册访问者连接失败", err, lo.FromPtr(svr.cfg.DetailedErrorsToClient)),
 			})
 			conn.Close()
 		} else {
@@ -469,7 +469,7 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn, interna
 			})
 		}
 	default:
-		log.Warnf("Error message type for the new connection [%s]", conn.RemoteAddr().String())
+		log.Warnf("新连接的错误消息类型: [%s]", conn.RemoteAddr().String())
 		conn.Close()
 	}
 }
@@ -482,7 +482,7 @@ func (svr *Service) HandleListener(l net.Listener, internal bool) {
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			log.Warnf("Listener for incoming connections from client closed")
+			log.Warnf("ME Frp 服务端监听器关闭")
 			return
 		}
 		// inject xlog object into net.Conn context
@@ -492,17 +492,17 @@ func (svr *Service) HandleListener(l net.Listener, internal bool) {
 		c = netpkg.NewContextConn(xlog.NewContext(ctx, xl), c)
 
 		if !internal {
-			log.Tracef("start check TLS connection...")
+			log.Tracef("开始检查 TLS 连接...")
 			originConn := c
 			forceTLS := svr.cfg.Transport.TLS.Force
 			var isTLS, custom bool
 			c, isTLS, custom, err = netpkg.CheckAndEnableTLSServerConnWithTimeout(c, svr.tlsConfig, forceTLS, connReadTimeout)
 			if err != nil {
-				log.Warnf("CheckAndEnableTLSServerConnWithTimeout error: %v", err)
+				log.Warnf("CheckAndEnableTLSServerConnWithTimeout 错误: %v", err)
 				originConn.Close()
 				continue
 			}
-			log.Tracef("check TLS connection success, isTLS: %v custom: %v internal: %v", isTLS, custom, internal)
+			log.Tracef("检查 TLS 连接成功, TLS 状态: %v 自定义: %v 内部: %v", isTLS, custom, internal)
 		}
 
 		// Start a new goroutine to handle connection.
@@ -514,7 +514,7 @@ func (svr *Service) HandleListener(l net.Listener, internal bool) {
 				fmuxCfg.MaxStreamWindowSize = 6 * 1024 * 1024
 				session, err := fmux.Server(frpConn, fmuxCfg)
 				if err != nil {
-					log.Warnf("Failed to create mux connection: %v", err)
+					log.Warnf("创建 Mux 连接失败: %v", err)
 					frpConn.Close()
 					return
 				}
@@ -522,7 +522,7 @@ func (svr *Service) HandleListener(l net.Listener, internal bool) {
 				for {
 					stream, err := session.AcceptStream()
 					if err != nil {
-						log.Debugf("Accept new mux stream error: %v", err)
+						log.Debugf("接受新的 Mux 流失败: %v", err)
 						session.Close()
 						return
 					}
@@ -540,7 +540,7 @@ func (svr *Service) HandleQUICListener(l *quic.Listener) {
 	for {
 		c, err := l.Accept(context.Background())
 		if err != nil {
-			log.Warnf("QUICListener for incoming connections from client closed")
+			log.Warnf("ME Frp 服务端 QUIC 监听器关闭")
 			return
 		}
 		// Start a new goroutine to handle connection.
@@ -548,7 +548,7 @@ func (svr *Service) HandleQUICListener(l *quic.Listener) {
 			for {
 				stream, err := frpConn.AcceptStream(context.Background())
 				if err != nil {
-					log.Debugf("Accept new quic mux stream error: %v", err)
+					log.Debugf("接受新的 QUIC Mux 流失败: %v", err)
 					_ = frpConn.CloseWithError(0, "")
 					return
 				}
@@ -573,7 +573,7 @@ func (svr *Service) RegisterControl(ctlConn net.Conn, loginMsg *msg.Login, inter
 	xl := xlog.FromContextSafe(ctx)
 	xl.AppendPrefix(loginMsg.RunID)
 	ctx = xlog.NewContext(ctx, xl)
-	xl.Infof("client login info: ip [%s] version [%s] hostname [%s] os [%s] arch [%s]",
+	xl.Infof("客户端登录信息: IP [%s] 版本 [%s] 主机名 [%s] 操作系统 [%s] 架构 [%s]",
 		ctlConn.RemoteAddr().String(), loginMsg.Version, loginMsg.Hostname, loginMsg.Os, loginMsg.Arch)
 
 	// Check auth.
@@ -588,9 +588,9 @@ func (svr *Service) RegisterControl(ctlConn net.Conn, loginMsg *msg.Login, inter
 	// TODO(fatedier): use SessionContext
 	ctl, err := NewControl(ctx, svr.rc, svr.pxyManager, svr.pluginManager, authVerifier, ctlConn, !internal, loginMsg, svr.cfg)
 	if err != nil {
-		xl.Warnf("create new controller error: %v", err)
+		xl.Warnf("创建新控制器失败: %v", err)
 		// don't return detailed errors to client
-		return fmt.Errorf("unexpected error when creating new controller")
+		return fmt.Errorf("创建新控制器失败")
 	}
 	if oldCtl := svr.ctlManager.Add(loginMsg.RunID, ctl); oldCtl != nil {
 		oldCtl.WaitClosed()
@@ -614,8 +614,8 @@ func (svr *Service) RegisterWorkConn(workConn net.Conn, newMsg *msg.NewWorkConn)
 	xl := netpkg.NewLogFromConn(workConn)
 	ctl, exist := svr.ctlManager.GetByID(newMsg.RunID)
 	if !exist {
-		xl.Warnf("No client control found for run id [%s]", newMsg.RunID)
-		return fmt.Errorf("no client control found for run id [%s]", newMsg.RunID)
+		xl.Warnf("未找到 RunId [%s] 的客户端控制器", newMsg.RunID)
+		return fmt.Errorf("未找到 RunId [%s] 的客户端控制器", newMsg.RunID)
 	}
 	// server plugin hook
 	content := &plugin.NewWorkConnContent{
@@ -633,11 +633,11 @@ func (svr *Service) RegisterWorkConn(workConn net.Conn, newMsg *msg.NewWorkConn)
 		err = ctl.authVerifier.VerifyNewWorkConn(newMsg)
 	}
 	if err != nil {
-		xl.Warnf("invalid NewWorkConn with run id [%s]", newMsg.RunID)
+		xl.Warnf("无效的 NewWorkConn 与 RunId [%s]", newMsg.RunID)
 		_ = msg.WriteMsg(workConn, &msg.StartWorkConn{
-			Error: util.GenerateResponseErrorString("invalid NewWorkConn", err, lo.FromPtr(svr.cfg.DetailedErrorsToClient)),
+			Error: util.GenerateResponseErrorString("无效的 NewWorkConn", err, lo.FromPtr(svr.cfg.DetailedErrorsToClient)),
 		})
-		return fmt.Errorf("invalid NewWorkConn with run id [%s]", newMsg.RunID)
+		return fmt.Errorf("无效的 NewWorkConn 与 RunId [%s]", newMsg.RunID)
 	}
 	return ctl.RegisterWorkConn(workConn)
 }
@@ -649,7 +649,7 @@ func (svr *Service) RegisterVisitorConn(visitorConn net.Conn, newMsg *msg.NewVis
 	if newMsg.RunID != "" {
 		ctl, exist := svr.ctlManager.GetByID(newMsg.RunID)
 		if !exist {
-			return fmt.Errorf("no client control found for run id [%s]", newMsg.RunID)
+			return fmt.Errorf("未找到 RunId [%s] 的客户端控制器", newMsg.RunID)
 		}
 		visitorUser = ctl.loginMsg.User
 	}

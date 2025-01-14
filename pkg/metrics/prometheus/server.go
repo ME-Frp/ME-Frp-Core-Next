@@ -59,31 +59,31 @@ func newServerMetrics() *serverMetrics {
 			Namespace: namespace,
 			Subsystem: serverSubsystem,
 			Name:      "client_counts",
-			Help:      "The current client counts of frps",
+			Help:      "当前客户端数量",
 		}),
 		proxyCount: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Subsystem: serverSubsystem,
 			Name:      "proxy_counts",
-			Help:      "The current proxy counts",
+			Help:      "当前隧道数量",
 		}, []string{"type"}),
 		connectionCount: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Subsystem: serverSubsystem,
 			Name:      "connection_counts",
-			Help:      "The current connection counts",
+			Help:      "当前连接数量",
 		}, []string{"name", "type"}),
 		trafficIn: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
 			Subsystem: serverSubsystem,
 			Name:      "traffic_in",
-			Help:      "The total in traffic",
+			Help:      "总入网流量",
 		}, []string{"name", "type"}),
 		trafficOut: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
 			Subsystem: serverSubsystem,
 			Name:      "traffic_out",
-			Help:      "The total out traffic",
+			Help:      "总出网流量",
 		}, []string{"name", "type"}),
 	}
 	prometheus.MustRegister(m.clientCount)

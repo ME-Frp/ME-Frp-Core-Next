@@ -48,7 +48,7 @@ func CheckAndEnableTLSServerConnWithTimeout(
 		isTLS = true
 	default:
 		if tlsOnly {
-			err = fmt.Errorf("non-TLS connection received on a TlsOnly server")
+			err = fmt.Errorf("TLS 服务器收到了未加密连接")
 			return
 		}
 		out = sc

@@ -65,7 +65,7 @@ func (pxy *TCPMuxProxy) httpConnectListen(
 	if err != nil {
 		return nil, err
 	}
-	pxy.xl.Infof("tcpmux httpconnect multiplexer listens for host [%s], group [%s] routeByHTTPUser [%s]",
+	pxy.xl.Infof("TCPMUX HTTP Multiplexer 监听主机 [%s], 组 [%s] routeByHTTPUser [%s]",
 		domain, pxy.cfg.LoadBalancer.Group, pxy.cfg.RouteByHTTPUser)
 	pxy.listeners = append(pxy.listeners, l)
 	return append(addrs, util.CanonicalAddr(domain, pxy.serverCfg.TCPMuxHTTPConnectPort)), nil
@@ -102,7 +102,7 @@ func (pxy *TCPMuxProxy) Run() (remoteAddr string, err error) {
 	case v1.TCPMultiplexerHTTPConnect:
 		remoteAddr, err = pxy.httpConnectRun()
 	default:
-		err = fmt.Errorf("unknown multiplexer [%s]", pxy.cfg.Multiplexer)
+		err = fmt.Errorf("未知的 Multiplexer [%s]", pxy.cfg.Multiplexer)
 	}
 
 	if err != nil {

@@ -50,7 +50,7 @@ func (pxy *XTCPProxy) Run() (remoteAddr string, err error) {
 	xl := pxy.xl
 
 	if pxy.rc.NatHoleController == nil {
-		err = fmt.Errorf("xtcp is not supported in frps")
+		err = fmt.Errorf("XTCP 在 ME Frp 服务端中不支持")
 		return
 	}
 	allowUsers := pxy.cfg.AllowUsers
@@ -77,7 +77,7 @@ func (pxy *XTCPProxy) Run() (remoteAddr string, err error) {
 				}
 				errRet = msg.WriteMsg(workConn, m)
 				if errRet != nil {
-					xl.Warnf("write nat hole sid package error, %v", errRet)
+					xl.Warnf("写入 NAT sid 包失败, %v", errRet)
 				}
 				workConn.Close()
 			}

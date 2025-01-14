@@ -79,7 +79,7 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 	xl := pxy.xl
 	pxy.realBindPort, err = pxy.rc.UDPPortManager.Acquire(pxy.name, pxy.cfg.RemotePort)
 	if err != nil {
-		return "", fmt.Errorf("acquire port %d error: %v", pxy.cfg.RemotePort, err)
+		return "", fmt.Errorf("获取端口 %d 失败: %v", pxy.cfg.RemotePort, err)
 	}
 	defer func() {
 		if err != nil {
@@ -97,10 +97,10 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 	udpConn, errRet := net.ListenUDP("udp", addr)
 	if errRet != nil {
 		err = errRet
-		xl.Warnf("listen udp port error: %v", err)
+		xl.Warnf("监听 UDP 端口失败: %v", err)
 		return
 	}
-	xl.Infof("udp proxy listen port [%d]", pxy.cfg.RemotePort)
+	xl.Infof("UDP 隧道监听端口 [%d]", pxy.cfg.RemotePort)
 
 	pxy.udpConn = udpConn
 	pxy.sendCh = make(chan *msg.UDPPacket, 1024)
@@ -114,11 +114,11 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 				rawMsg msg.Message
 				errRet error
 			)
-			xl.Tracef("loop waiting message from udp workConn")
+			xl.Tracef("等待 UDP 工作连接的消息")
 			// client will send heartbeat in workConn for keeping alive
 			_ = conn.SetReadDeadline(time.Now().Add(time.Duration(60) * time.Second))
 			if rawMsg, errRet = msg.ReadMsg(conn); errRet != nil {
-				xl.Warnf("read from workConn for udp error: %v", errRet)
+				xl.Warnf("从 UDP 工作连接读取失败: %v", errRet)
 				_ = conn.Close()
 				// notify proxy to start a new work connection
 				// ignore error here, it means the proxy is closed
@@ -128,15 +128,15 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 				return
 			}
 			if err := conn.SetReadDeadline(time.Time{}); err != nil {
-				xl.Warnf("set read deadline error: %v", err)
+				xl.Warnf("设置读取截止时间失败: %v", err)
 			}
 			switch m := rawMsg.(type) {
 			case *msg.Ping:
-				xl.Tracef("udp work conn get ping message")
+				xl.Tracef("UDP 工作连接收到心跳消息")
 				continue
 			case *msg.UDPPacket:
 				if errRet := errors.PanicToError(func() {
-					xl.Tracef("get udp message from workConn: %s", m.Content)
+					xl.Tracef("从 UDP 工作连接收到消息: %s", m.Content)
 					pxy.readCh <- m
 					metrics.Server.AddTrafficOut(
 						pxy.GetName(),
@@ -145,7 +145,7 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 					)
 				}); errRet != nil {
 					conn.Close()
-					xl.Infof("reader goroutine for udp work connection closed")
+					xl.Infof("UDP 工作连接读取器已关闭")
 					return
 				}
 			}
@@ -159,15 +159,15 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 			select {
 			case udpMsg, ok := <-pxy.sendCh:
 				if !ok {
-					xl.Infof("sender goroutine for udp work connection closed")
+					xl.Infof("UDP 工作连接发送器已关闭")
 					return
 				}
 				if errRet = msg.WriteMsg(conn, udpMsg); errRet != nil {
-					xl.Infof("sender goroutine for udp work connection closed: %v", errRet)
+					xl.Infof("UDP 工作连接发送器已关闭: %v", errRet)
 					conn.Close()
 					return
 				}
-				xl.Tracef("send message to udp workConn: %s", udpMsg.Content)
+				xl.Tracef("发送消息到 UDP 工作连接: %s", udpMsg.Content)
 				metrics.Server.AddTrafficIn(
 					pxy.GetName(),
 					pxy.GetConfigurer().GetBaseConfig().Type,
@@ -175,7 +175,7 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 				)
 				continue
 			case <-ctx.Done():
-				xl.Infof("sender goroutine for udp work connection closed")
+				xl.Infof("UDP 工作连接发送器已关闭")
 				return
 			}
 		}
@@ -207,7 +207,7 @@ func (pxy *UDPProxy) Run() (remoteAddr string, err error) {
 			if pxy.cfg.Transport.UseEncryption {
 				rwc, err = libio.WithEncryption(rwc, []byte(pxy.serverCfg.Auth.Token))
 				if err != nil {
-					xl.Errorf("create encryption stream error: %v", err)
+					xl.Errorf("创建加密流失败: %v", err)
 					workConn.Close()
 					continue
 				}

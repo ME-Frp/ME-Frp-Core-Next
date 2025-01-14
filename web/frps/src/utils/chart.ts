@@ -49,7 +49,7 @@ export function DrawProxyChart(chart: echarts.ECharts, serverInfo: any) {
 
   const option: EChartsOption = {
     title: {
-      text: '代理类型统计'
+      text: '隧道类型统计'
     },
     tooltip: {
       trigger: 'item',

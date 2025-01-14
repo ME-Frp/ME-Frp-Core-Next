@@ -157,7 +157,7 @@ func (g *HTTPGroup) createConn(remoteAddr string) (net.Conn, error) {
 	g.mu.RUnlock()
 
 	if f == nil {
-		return nil, fmt.Errorf("no CreateConnFunc for http group [%s], domain [%s], location [%s], routeByHTTPUser [%s]",
+		return nil, fmt.Errorf("没有 CreateConnFunc 用于 HTTP 组 [%s], 域名 [%s], 位置 [%s], routeByHTTPUser [%s]",
 			group, domain, location, routeByHTTPUser)
 	}
 
@@ -179,7 +179,7 @@ func (g *HTTPGroup) chooseEndpoint() (string, error) {
 	g.mu.RUnlock()
 
 	if name == "" {
-		return "", fmt.Errorf("no healthy endpoint for http group [%s], domain [%s], location [%s], routeByHTTPUser [%s]",
+		return "", fmt.Errorf("没有健康的端点用于 HTTP 组 [%s], 域名 [%s], 位置 [%s], routeByHTTPUser [%s]",
 			group, domain, location, routeByHTTPUser)
 	}
 	return name, nil
@@ -192,7 +192,7 @@ func (g *HTTPGroup) createConnByEndpoint(endpoint, remoteAddr string) (net.Conn,
 	g.mu.RUnlock()
 
 	if f == nil {
-		return nil, fmt.Errorf("no CreateConnFunc for endpoint [%s] in group [%s]", endpoint, g.group)
+		return nil, fmt.Errorf("组 [%s] 没有 CreateConnFunc 用于端点 [%s]", g.group, endpoint)
 	}
 	return f(remoteAddr)
 }

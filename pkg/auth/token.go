@@ -63,7 +63,7 @@ func (auth *TokenAuthSetterVerifier) SetNewWorkConn(newWorkConnMsg *msg.NewWorkC
 
 func (auth *TokenAuthSetterVerifier) VerifyLogin(m *msg.Login) error {
 	if !util.ConstantTimeEqString(util.GetAuthKey(auth.token, m.Timestamp), m.PrivilegeKey) {
-		return fmt.Errorf("token in login doesn't match token from configuration")
+		return fmt.Errorf("登录 Token 与配置文件中的 Token 不匹配")
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func (auth *TokenAuthSetterVerifier) VerifyPing(m *msg.Ping) error {
 	}
 
 	if !util.ConstantTimeEqString(util.GetAuthKey(auth.token, m.Timestamp), m.PrivilegeKey) {
-		return fmt.Errorf("token in heartbeat doesn't match token from configuration")
+		return fmt.Errorf("心跳包 Token 与配置文件中的 Token 不匹配")
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (auth *TokenAuthSetterVerifier) VerifyNewWorkConn(m *msg.NewWorkConn) error
 	}
 
 	if !util.ConstantTimeEqString(util.GetAuthKey(auth.token, m.Timestamp), m.PrivilegeKey) {
-		return fmt.Errorf("token in NewWorkConn doesn't match token from configuration")
+		return fmt.Errorf("新连接 Token 与配置文件中的 Token 不匹配")
 	}
 	return nil
 }

@@ -24,7 +24,7 @@ func ReadBytes(r io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	if length < 0 || length > 10*1024*1024 {
-		return nil, fmt.Errorf("invalid length")
+		return nil, fmt.Errorf("无效的长度")
 	}
 	buffer := make([]byte, length)
 	n, err := io.ReadFull(r, buffer)
@@ -32,7 +32,7 @@ func ReadBytes(r io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	if int64(n) != length {
-		return nil, errors.New("invalid length")
+		return nil, errors.New("无效的长度")
 	}
 	return buffer, nil
 }

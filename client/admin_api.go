@@ -76,9 +76,9 @@ func (svr *Service) apiReload(w http.ResponseWriter, r *http.Request) {
 		strictConfigMode, _ = strconv.ParseBool(strictStr)
 	}
 
-	log.Infof("api request [/api/reload]")
+	log.Infof("API 请求 [/api/reload]")
 	defer func() {
-		log.Infof("api response [/api/reload], code [%d]", res.Code)
+		log.Infof("API 响应 [/api/reload], 状态码 [%d]", res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
@@ -89,32 +89,32 @@ func (svr *Service) apiReload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		res.Code = 400
 		res.Msg = err.Error()
-		log.Warnf("reload frpc proxy config error: %s", res.Msg)
+		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
 		return
 	}
 	if _, err := validation.ValidateAllClientConfig(cliCfg, proxyCfgs, visitorCfgs); err != nil {
 		res.Code = 400
 		res.Msg = err.Error()
-		log.Warnf("reload frpc proxy config error: %s", res.Msg)
+		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
 		return
 	}
 
 	if err := svr.UpdateAllConfigurer(proxyCfgs, visitorCfgs); err != nil {
 		res.Code = 500
 		res.Msg = err.Error()
-		log.Warnf("reload frpc proxy config error: %s", res.Msg)
+		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
 		return
 	}
-	log.Infof("success reload conf")
+	log.Infof("成功重新加载配置")
 }
 
 // POST /api/stop
 func (svr *Service) apiStop(w http.ResponseWriter, _ *http.Request) {
 	res := GeneralResponse{Code: 200}
 
-	log.Infof("api request [/api/stop]")
+	log.Infof("API 请求 [/api/stop]")
 	defer func() {
-		log.Infof("api response [/api/stop], code [%d]", res.Code)
+		log.Infof("API 响应 [/api/stop], 状态码 [%d]", res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
@@ -165,9 +165,9 @@ func (svr *Service) apiStatus(w http.ResponseWriter, _ *http.Request) {
 		res StatusResp = make(map[string][]ProxyStatusResp)
 	)
 
-	log.Infof("Http request [/api/status]")
+	log.Infof("HTTP 请求 [/api/status]")
 	defer func() {
-		log.Infof("Http response [/api/status]")
+		log.Infof("HTTP 响应 [/api/status]")
 		buf, _ = json.Marshal(&res)
 		_, _ = w.Write(buf)
 	}()
@@ -198,9 +198,9 @@ func (svr *Service) apiStatus(w http.ResponseWriter, _ *http.Request) {
 func (svr *Service) apiGetConfig(w http.ResponseWriter, _ *http.Request) {
 	res := GeneralResponse{Code: 200}
 
-	log.Infof("Http get request [/api/config]")
+	log.Infof("HTTP 获取请求 [/api/config]")
 	defer func() {
-		log.Infof("Http get response [/api/config], code [%d]", res.Code)
+		log.Infof("HTTP 获取响应 [/api/config], 状态码 [%d]", res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
@@ -209,7 +209,7 @@ func (svr *Service) apiGetConfig(w http.ResponseWriter, _ *http.Request) {
 
 	if svr.configFilePath == "" {
 		res.Code = 400
-		res.Msg = "frpc has no config file path"
+		res.Msg = "未配置 ME Frp 客户端配置文件路径"
 		log.Warnf("%s", res.Msg)
 		return
 	}
@@ -218,7 +218,7 @@ func (svr *Service) apiGetConfig(w http.ResponseWriter, _ *http.Request) {
 	if err != nil {
 		res.Code = 400
 		res.Msg = err.Error()
-		log.Warnf("load frpc config file error: %s", res.Msg)
+		log.Warnf("加载 ME Frp 客户端配置文件错误: %s", res.Msg)
 		return
 	}
 	res.Msg = string(content)
@@ -228,9 +228,9 @@ func (svr *Service) apiGetConfig(w http.ResponseWriter, _ *http.Request) {
 func (svr *Service) apiPutConfig(w http.ResponseWriter, r *http.Request) {
 	res := GeneralResponse{Code: 200}
 
-	log.Infof("Http put request [/api/config]")
+	log.Infof("HTTP PUT 请求 [/api/config]")
 	defer func() {
-		log.Infof("Http put response [/api/config], code [%d]", res.Code)
+		log.Infof("HTTP PUT 响应 [/api/config], 状态码 [%d]", res.Code)
 		w.WriteHeader(res.Code)
 		if len(res.Msg) > 0 {
 			_, _ = w.Write([]byte(res.Msg))
@@ -241,21 +241,21 @@ func (svr *Service) apiPutConfig(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		res.Code = 400
-		res.Msg = fmt.Sprintf("read request body error: %v", err)
+		res.Msg = fmt.Sprintf("读取请求体错误: %v", err)
 		log.Warnf("%s", res.Msg)
 		return
 	}
 
 	if len(body) == 0 {
 		res.Code = 400
-		res.Msg = "body can't be empty"
+		res.Msg = "请求体不能为空"
 		log.Warnf("%s", res.Msg)
 		return
 	}
 
 	if err := os.WriteFile(svr.configFilePath, body, 0o600); err != nil {
 		res.Code = 500
-		res.Msg = fmt.Sprintf("write content to frpc config file error: %v", err)
+		res.Msg = fmt.Sprintf("写入 ME Frp 客户端配置文件错误: %v", err)
 		log.Warnf("%s", res.Msg)
 		return
 	}

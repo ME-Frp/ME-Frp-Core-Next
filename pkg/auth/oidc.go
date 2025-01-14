@@ -59,7 +59,7 @@ func NewOidcAuthSetter(additionalAuthScopes []v1.AuthScope, cfg v1.AuthOIDCClien
 func (auth *OidcAuthProvider) generateAccessToken() (accessToken string, err error) {
 	tokenObj, err := auth.tokenGenerator.Token(context.Background())
 	if err != nil {
-		return "", fmt.Errorf("couldn't generate OIDC token for login: %v", err)
+		return "", fmt.Errorf("无法生成 OIDC 登录令牌: %v", err)
 	}
 	return tokenObj.AccessToken, nil
 }
@@ -123,7 +123,7 @@ func NewOidcAuthVerifier(additionalAuthScopes []v1.AuthScope, verifier TokenVeri
 func (auth *OidcAuthConsumer) VerifyLogin(loginMsg *msg.Login) (err error) {
 	token, err := auth.verifier.Verify(context.Background(), loginMsg.PrivilegeKey)
 	if err != nil {
-		return fmt.Errorf("invalid OIDC token in login: %v", err)
+		return fmt.Errorf("无效的 OIDC 登录 Token: %v", err)
 	}
 	if !slices.Contains(auth.subjectsFromLogin, token.Subject) {
 		auth.subjectsFromLogin = append(auth.subjectsFromLogin, token.Subject)
@@ -134,12 +134,12 @@ func (auth *OidcAuthConsumer) VerifyLogin(loginMsg *msg.Login) (err error) {
 func (auth *OidcAuthConsumer) verifyPostLoginToken(privilegeKey string) (err error) {
 	token, err := auth.verifier.Verify(context.Background(), privilegeKey)
 	if err != nil {
-		return fmt.Errorf("invalid OIDC token in ping: %v", err)
+		return fmt.Errorf("无效的 OIDC 心跳包 Token: %v", err)
 	}
 	if !slices.Contains(auth.subjectsFromLogin, token.Subject) {
-		return fmt.Errorf("received different OIDC subject in login and ping. "+
-			"original subjects: %s, "+
-			"new subject: %s",
+		return fmt.Errorf("登录和心跳包中收到了不同的 OIDC Subject. "+
+			"原始 Subject: %s, "+
+			"新 Subject: %s",
 			auth.subjectsFromLogin, token.Subject)
 	}
 	return nil

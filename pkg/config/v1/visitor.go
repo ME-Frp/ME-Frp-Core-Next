@@ -94,7 +94,7 @@ type TypedVisitorConfig struct {
 
 func (c *TypedVisitorConfig) UnmarshalJSON(b []byte) error {
 	if len(b) == 4 && string(b) == "null" {
-		return errors.New("type is required")
+		return errors.New("访问者类型不能为空")
 	}
 
 	typeStruct := struct {
@@ -107,14 +107,14 @@ func (c *TypedVisitorConfig) UnmarshalJSON(b []byte) error {
 	c.Type = typeStruct.Type
 	configurer := NewVisitorConfigurerByType(VisitorType(typeStruct.Type))
 	if configurer == nil {
-		return fmt.Errorf("unknown visitor type: %s", typeStruct.Type)
+		return fmt.Errorf("未知访问者类型: %s", typeStruct.Type)
 	}
 	decoder := json.NewDecoder(bytes.NewBuffer(b))
 	if DisallowUnknownFields {
 		decoder.DisallowUnknownFields()
 	}
 	if err := decoder.Decode(configurer); err != nil {
-		return fmt.Errorf("unmarshal VisitorConfig error: %v", err)
+		return fmt.Errorf("处理访问者配置失败: %v", err)
 	}
 	c.VisitorConfigurer = configurer
 	return nil

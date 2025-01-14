@@ -63,7 +63,7 @@ func (tmgc *TCPMuxGroupCtl) Listen(
 	case v1.TCPMultiplexerHTTPConnect:
 		return tcpMuxGroup.HTTPConnectListen(ctx, group, groupKey, routeConfig)
 	default:
-		err = fmt.Errorf("unknown multiplexer [%s]", multiplexer)
+		err = fmt.Errorf("未知的 Multiplexer [%s]", multiplexer)
 		return
 	}
 }

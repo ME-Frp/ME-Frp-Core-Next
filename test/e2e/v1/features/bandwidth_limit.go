@@ -18,7 +18,7 @@ import (
 var _ = ginkgo.Describe("[Feature: Bandwidth Limit]", func() {
 	f := framework.NewDefaultFramework()
 
-	ginkgo.It("Proxy Bandwidth Limit by Client", func() {
+	ginkgo.It("客户端隧道带宽限制模式", func() {
 		serverConf := consts.DefaultServerConfig
 		clientConf := consts.DefaultClientConfig
 
@@ -45,12 +45,12 @@ var _ = ginkgo.Describe("[Feature: Bandwidth Limit]", func() {
 		}).ExpectResp([]byte(content)).Ensure()
 
 		duration := time.Since(start)
-		framework.Logf("request duration: %s", duration.String())
+		framework.Logf("请求持续时间: %s", duration.String())
 
 		framework.ExpectTrue(duration.Seconds() > 8, "100Kb with 10KB limit, want > 8 seconds, but got %s", duration.String())
 	})
 
-	ginkgo.It("Proxy Bandwidth Limit by Server", func() {
+	ginkgo.It("服务端隧道带宽限制模式", func() {
 		// new test plugin server
 		newFunc := func() *plugin.Request {
 			var r plugin.Request
@@ -101,7 +101,7 @@ var _ = ginkgo.Describe("[Feature: Bandwidth Limit]", func() {
 		}).ExpectResp([]byte(content)).Ensure()
 
 		duration := time.Since(start)
-		framework.Logf("request duration: %s", duration.String())
+		framework.Logf("请求持续时间: %s", duration.String())
 
 		framework.ExpectTrue(duration.Seconds() > 8, "100Kb with 10KB limit, want > 8 seconds, but got %s", duration.String())
 	})

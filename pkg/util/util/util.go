@@ -79,7 +79,7 @@ func ParseRangeNumbers(rangeStr string) (numbers []int64, err error) {
 			// single number
 			singleNum, errRet := strconv.ParseInt(strings.TrimSpace(numArray[0]), 10, 64)
 			if errRet != nil {
-				err = fmt.Errorf("range number is invalid, %v", errRet)
+				err = fmt.Errorf("范围无效, %v", errRet)
 				return
 			}
 			numbers = append(numbers, singleNum)
@@ -87,23 +87,23 @@ func ParseRangeNumbers(rangeStr string) (numbers []int64, err error) {
 			// range numbers
 			minValue, errRet := strconv.ParseInt(strings.TrimSpace(numArray[0]), 10, 64)
 			if errRet != nil {
-				err = fmt.Errorf("range number is invalid, %v", errRet)
+				err = fmt.Errorf("范围无效, %v", errRet)
 				return
 			}
 			maxValue, errRet := strconv.ParseInt(strings.TrimSpace(numArray[1]), 10, 64)
 			if errRet != nil {
-				err = fmt.Errorf("range number is invalid, %v", errRet)
+				err = fmt.Errorf("范围无效, %v", errRet)
 				return
 			}
 			if maxValue < minValue {
-				err = fmt.Errorf("range number is invalid")
+				err = fmt.Errorf("范围无效")
 				return
 			}
 			for i := minValue; i <= maxValue; i++ {
 				numbers = append(numbers, i)
 			}
 		default:
-			err = fmt.Errorf("range number is invalid")
+			err = fmt.Errorf("范围无效")
 			return
 		}
 	}

@@ -24,10 +24,10 @@ import (
 func validateWebServerConfig(c *v1.WebServerConfig) error {
 	if c.TLS != nil {
 		if c.TLS.CertFile == "" {
-			return fmt.Errorf("tls.certFile must be specified when tls is enabled")
+			return fmt.Errorf("tls.certFile 在 TLS 启用时必须指定")
 		}
 		if c.TLS.KeyFile == "" {
-			return fmt.Errorf("tls.keyFile must be specified when tls is enabled")
+			return fmt.Errorf("tls.keyFile 在 TLS 启用时必须指定")
 		}
 	}
 
@@ -39,12 +39,12 @@ func ValidatePort(port int, fieldPath string) error {
 	if 0 <= port && port <= 65535 {
 		return nil
 	}
-	return fmt.Errorf("%s: port number %d must be in the range 0..65535", fieldPath, port)
+	return fmt.Errorf("%s: 端口 %d 必须在 0 - 65535 范围内", fieldPath, port)
 }
 
 func validateLogConfig(c *v1.LogConfig) error {
 	if !slices.Contains(SupportedLogLevels, c.Level) {
-		return fmt.Errorf("invalid log level, optional values are %v", SupportedLogLevels)
+		return fmt.Errorf("LogLevel 无效, 可选值为 %v", SupportedLogLevels)
 	}
 	return nil
 }

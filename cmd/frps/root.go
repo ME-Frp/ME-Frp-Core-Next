@@ -38,16 +38,16 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file of frps")
-	rootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "v", false, "version of frps")
-	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "strict config parsing mode, unknown fields will cause errors")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "ME Frp 配置文件")
+	rootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "v", false, "ME Frp 核心版本")
+	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "严格配置解析模式，未知字段将导致错误")
 
 	config.RegisterServerConfigFlags(rootCmd, &serverCfg)
 }
 
 var rootCmd = &cobra.Command{
 	Use:   "frps",
-	Short: "frps is the server of frp (https://github.com/fatedier/frp)",
+	Short: "ME Frp 服务端",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if showVersion {
 			fmt.Println(version.Full())
@@ -66,8 +66,7 @@ var rootCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			if isLegacyFormat {
-				fmt.Printf("WARNING: ini format is deprecated and the support will be removed in the future, " +
-					"please use yaml/json/toml format instead!\n")
+				fmt.Printf("警告: INI 格式已弃用，将在未来版本中移除，请使用 Yaml/JSON/Toml 格式!\n")
 			}
 		} else {
 			serverCfg.Complete()
@@ -76,7 +75,7 @@ var rootCmd = &cobra.Command{
 
 		warning, err := validation.ValidateServerConfig(svrCfg)
 		if warning != nil {
-			fmt.Printf("WARNING: %v\n", warning)
+			fmt.Printf("警告: %v\n", warning)
 		}
 		if err != nil {
 			fmt.Println(err)
@@ -102,16 +101,16 @@ func runServer(cfg *v1.ServerConfig) (err error) {
 	log.InitLogger(cfg.Log.To, cfg.Log.Level, int(cfg.Log.MaxDays), cfg.Log.DisablePrintColor)
 
 	if cfgFile != "" {
-		log.Infof("frps uses config file: %s", cfgFile)
+		log.Infof("ME Frp 正在使用配置文件: %s", cfgFile)
 	} else {
-		log.Infof("frps uses command line arguments for config")
+		log.Infof("ME Frp 正在使用命令行参数进行配置")
 	}
 
 	svr, err := server.NewService(cfg)
 	if err != nil {
 		return err
 	}
-	log.Infof("frps started successfully")
+	log.Infof("ME Frp 服务端启动成功")
 	svr.Run(context.Background())
 	return
 }

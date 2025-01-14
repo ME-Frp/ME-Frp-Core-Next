@@ -67,7 +67,7 @@ func ListenKcp(address string) (l *KCPListener, err error) {
 func (l *KCPListener) Accept() (net.Conn, error) {
 	conn, ok := <-l.acceptCh
 	if !ok {
-		return conn, fmt.Errorf("channel for kcp listener closed")
+		return conn, fmt.Errorf("KCP 监听器通道关闭")
 	}
 	return conn, nil
 }

@@ -41,7 +41,7 @@ func ParseClientConfig(filePath string) (
 		return
 	}
 	if err = cfg.Validate(); err != nil {
-		err = fmt.Errorf("parse config error: %v", err)
+		err = fmt.Errorf("解析配置文件失败: %v", err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func ParseClientConfig(filePath string) (
 	var buf []byte
 	buf, err = getIncludeContents(cfg.IncludeConfigFiles)
 	if err != nil {
-		err = fmt.Errorf("getIncludeContents error: %v", err)
+		err = fmt.Errorf("getIncludeContents 失败: %v", err)
 		return
 	}
 	configBuffer.WriteString("\n")
@@ -87,7 +87,7 @@ func getIncludeContents(paths []string) ([]byte, error) {
 			if matched, _ := filepath.Match(filepath.Join(absDir, filepath.Base(path)), absFile); matched {
 				tmpContent, err := GetRenderedConfFromFile(absFile)
 				if err != nil {
-					return nil, fmt.Errorf("render extra config %s error: %v", absFile, err)
+					return nil, fmt.Errorf("生成额外配置 %s 失败: %v", absFile, err)
 				}
 				out.Write(tmpContent)
 				out.WriteString("\n")

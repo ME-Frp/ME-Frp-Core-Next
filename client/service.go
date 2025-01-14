@@ -183,7 +183,7 @@ func (svr *Service) Run(ctx context.Context) error {
 	if svr.ctl == nil {
 		cancelCause := cancelErr{}
 		_ = errors.As(context.Cause(svr.ctx), &cancelCause)
-		return fmt.Errorf("login to the server failed: %v. With loginFailExit enabled, no additional retries will be attempted", cancelCause.Err)
+		return fmt.Errorf("登录节点失败: %v. 启用 loginFailExit 后，将不再尝试重试", cancelCause.Err)
 	}
 
 	go svr.keepControllerWorking()
@@ -206,7 +206,7 @@ func (svr *Service) keepControllerWorking() {
 		svr.loopLoginUntilSuccess(20*time.Second, false)
 		if svr.ctl != nil {
 			<-svr.ctl.Done()
-			return false, errors.New("control is closed and try another loop")
+			return false, errors.New("控制连接已关闭，尝试另一个循环")
 		}
 		// If the control is nil, it means that the login failed and the service is also closed.
 		return false, nil
@@ -284,7 +284,7 @@ func (svr *Service) login() (conn net.Conn, connector Connector, err error) {
 	svr.runID = loginRespMsg.RunID
 	xl.AddPrefix(xlog.LogPrefix{Name: "runID", Value: svr.runID})
 
-	xl.Infof("login to server success, get run id [%s]", loginRespMsg.RunID)
+	xl.Infof("登录节点成功，RunId: [%s]", loginRespMsg.RunID)
 	return
 }
 
@@ -292,10 +292,10 @@ func (svr *Service) loopLoginUntilSuccess(maxInterval time.Duration, firstLoginE
 	xl := xlog.FromContextSafe(svr.ctx)
 
 	loginFunc := func() (bool, error) {
-		xl.Infof("try to connect to server...")
+		xl.Infof("尝试连接到节点...")
 		conn, connector, err := svr.login()
 		if err != nil {
-			xl.Warnf("connect to server error: %v", err)
+			xl.Warnf("连接节点失败: %v", err)
 			if firstLoginExit {
 				svr.cancel(cancelErr{Err: err})
 			}
@@ -321,7 +321,7 @@ func (svr *Service) loopLoginUntilSuccess(maxInterval time.Duration, firstLoginE
 		ctl, err := NewControl(svr.ctx, sessionCtx)
 		if err != nil {
 			conn.Close()
-			xl.Errorf("NewControl error: %v", err)
+			xl.Errorf("创建控制连接失败: %v", err)
 			return false, err
 		}
 		ctl.SetInWorkConnCallback(svr.handleWorkConnCb)

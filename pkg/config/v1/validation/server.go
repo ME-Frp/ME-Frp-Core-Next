@@ -29,10 +29,10 @@ func ValidateServerConfig(c *v1.ServerConfig) (Warning, error) {
 		errs     error
 	)
 	if !slices.Contains(SupportedAuthMethods, c.Auth.Method) {
-		errs = AppendError(errs, fmt.Errorf("invalid auth method, optional values are %v", SupportedAuthMethods))
+		errs = AppendError(errs, fmt.Errorf("验证方式无效, 可选值为 %v", SupportedAuthMethods))
 	}
 	if !lo.Every(SupportedAuthAdditionalScopes, c.Auth.AdditionalScopes) {
-		errs = AppendError(errs, fmt.Errorf("invalid auth additional scopes, optional values are %v", SupportedAuthAdditionalScopes))
+		errs = AppendError(errs, fmt.Errorf("验证附加范围无效, 可选值为 %v", SupportedAuthAdditionalScopes))
 	}
 
 	if err := validateLogConfig(&c.Log); err != nil {
@@ -52,7 +52,7 @@ func ValidateServerConfig(c *v1.ServerConfig) (Warning, error) {
 
 	for _, p := range c.HTTPPlugins {
 		if !lo.Every(SupportedHTTPPluginOps, p.Ops) {
-			errs = AppendError(errs, fmt.Errorf("invalid http plugin ops, optional values are %v", SupportedHTTPPluginOps))
+			errs = AppendError(errs, fmt.Errorf("HTTP 插件操作无效, 可选值为 %v", SupportedHTTPPluginOps))
 		}
 	}
 	return warnings, errs

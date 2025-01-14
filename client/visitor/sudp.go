@@ -51,18 +51,18 @@ func (sv *SUDPVisitor) Run() (err error) {
 
 	addr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(sv.cfg.BindAddr, strconv.Itoa(sv.cfg.BindPort)))
 	if err != nil {
-		return fmt.Errorf("sudp ResolveUDPAddr error: %v", err)
+		return fmt.Errorf("SUDP ResolveUDPAddr 错误: %v", err)
 	}
 
 	sv.udpConn, err = net.ListenUDP("udp", addr)
 	if err != nil {
-		return fmt.Errorf("listen udp port %s error: %v", addr.String(), err)
+		return fmt.Errorf("SUDP 监听 UDP 端口 %s 错误: %v", addr.String(), err)
 	}
 
 	sv.sendCh = make(chan *msg.UDPPacket, 1024)
 	sv.readCh = make(chan *msg.UDPPacket, 1024)
 
-	xl.Infof("sudp start to work, listen on %s", addr)
+	xl.Infof("SUDP 开始工作, 监听于 %s", addr)
 
 	go sv.dispatcher()
 	go udp.ForwardUserConn(sv.udpConn, sv.readCh, sv.sendCh, int(sv.clientCfg.UDPPacketSize))
@@ -84,17 +84,17 @@ func (sv *SUDPVisitor) dispatcher() {
 		select {
 		case firstPacket = <-sv.sendCh:
 			if firstPacket == nil {
-				xl.Infof("frpc sudp visitor proxy is closed")
+				xl.Infof("SUDP 用户隧道已关闭")
 				return
 			}
 		case <-sv.checkCloseCh:
-			xl.Infof("frpc sudp visitor proxy is closed")
+			xl.Infof("SUDP 用户隧道已关闭")
 			return
 		}
 
 		visitorConn, err = sv.getNewVisitorConn()
 		if err != nil {
-			xl.Warnf("newVisitorConn to frps error: %v, try to reconnect", err)
+			xl.Warnf("连接到 ME Frp 节点错误: %v, 尝试重新连接", err)
 			continue
 		}
 
@@ -111,7 +111,7 @@ func (sv *SUDPVisitor) dispatcher() {
 
 func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 	xl := xlog.FromContextSafe(sv.ctx)
-	xl.Debugf("starting sudp proxy worker")
+	xl.Debugf("启动 SUDP 隧道工作")
 
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -134,21 +134,21 @@ func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 			// frpc will send heartbeat in workConn to frpc visitor for keeping alive
 			_ = conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 			if rawMsg, errRet = msg.ReadMsg(conn); errRet != nil {
-				xl.Warnf("read from workconn for user udp conn error: %v", errRet)
+				xl.Warnf("从工作连接读取用户 UDP 连接错误: %v", errRet)
 				return
 			}
 
 			_ = conn.SetReadDeadline(time.Time{})
 			switch m := rawMsg.(type) {
 			case *msg.Ping:
-				xl.Debugf("frpc visitor get ping message from frpc")
+				xl.Debugf("SUDP 用户隧道收到 Ping 消息")
 				continue
 			case *msg.UDPPacket:
 				if errRet := errors.PanicToError(func() {
 					sv.readCh <- m
-					xl.Tracef("frpc visitor get udp packet from workConn: %s", m.Content)
+					xl.Tracef("SUDP 用户隧道从工作连接收到 UDP 包: %s", m.Content)
 				}); errRet != nil {
-					xl.Infof("reader goroutine for udp work connection closed")
+					xl.Infof("SUDP 用户隧道工作连接读取器已关闭")
 					return
 				}
 			}
@@ -165,25 +165,25 @@ func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 		var errRet error
 		if firstPacket != nil {
 			if errRet = msg.WriteMsg(conn, firstPacket); errRet != nil {
-				xl.Warnf("sender goroutine for udp work connection closed: %v", errRet)
+				xl.Warnf("SUDP 用户隧道工作连接发送器已关闭: %v", errRet)
 				return
 			}
-			xl.Tracef("send udp package to workConn: %s", firstPacket.Content)
+			xl.Tracef("发送 UDP 包到工作连接: %s", firstPacket.Content)
 		}
 
 		for {
 			select {
 			case udpMsg, ok := <-sv.sendCh:
 				if !ok {
-					xl.Infof("sender goroutine for udp work connection closed")
+					xl.Infof("SUDP 用户隧道工作连接发送器已关闭")
 					return
 				}
 
 				if errRet = msg.WriteMsg(conn, udpMsg); errRet != nil {
-					xl.Warnf("sender goroutine for udp work connection closed: %v", errRet)
+					xl.Warnf("SUDP 用户隧道工作连接发送器已关闭: %v", errRet)
 					return
 				}
-				xl.Tracef("send udp package to workConn: %s", udpMsg.Content)
+				xl.Tracef("发送 UDP 包到工作连接: %s", udpMsg.Content)
 			case <-closeCh:
 				return
 			}
@@ -194,14 +194,14 @@ func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 	go workConnSenderFn(workConn)
 
 	wg.Wait()
-	xl.Infof("sudp worker is closed")
+	xl.Infof("SUDP 隧道工作已关闭")
 }
 
 func (sv *SUDPVisitor) getNewVisitorConn() (net.Conn, error) {
 	xl := xlog.FromContextSafe(sv.ctx)
 	visitorConn, err := sv.helper.ConnectServer()
 	if err != nil {
-		return nil, fmt.Errorf("frpc connect frps error: %v", err)
+		return nil, fmt.Errorf("SUDP 连接到 ME Frp 节点错误: %v", err)
 	}
 
 	now := time.Now().Unix()
@@ -215,19 +215,19 @@ func (sv *SUDPVisitor) getNewVisitorConn() (net.Conn, error) {
 	}
 	err = msg.WriteMsg(visitorConn, newVisitorConnMsg)
 	if err != nil {
-		return nil, fmt.Errorf("frpc send newVisitorConnMsg to frps error: %v", err)
+		return nil, fmt.Errorf("SUDP 发送 newVisitorConnMsg 到 ME Frp 节点错误: %v", err)
 	}
 
 	var newVisitorConnRespMsg msg.NewVisitorConnResp
 	_ = visitorConn.SetReadDeadline(time.Now().Add(10 * time.Second))
 	err = msg.ReadMsgInto(visitorConn, &newVisitorConnRespMsg)
 	if err != nil {
-		return nil, fmt.Errorf("frpc read newVisitorConnRespMsg error: %v", err)
+		return nil, fmt.Errorf("SUDP 读取 newVisitorConnRespMsg 错误: %v", err)
 	}
 	_ = visitorConn.SetReadDeadline(time.Time{})
 
 	if newVisitorConnRespMsg.Error != "" {
-		return nil, fmt.Errorf("start new visitor connection error: %s", newVisitorConnRespMsg.Error)
+		return nil, fmt.Errorf("启动新的用户连接错误: %s", newVisitorConnRespMsg.Error)
 	}
 
 	var remote io.ReadWriteCloser
@@ -235,7 +235,7 @@ func (sv *SUDPVisitor) getNewVisitorConn() (net.Conn, error) {
 	if sv.cfg.Transport.UseEncryption {
 		remote, err = libio.WithEncryption(remote, []byte(sv.cfg.SecretKey))
 		if err != nil {
-			xl.Errorf("create encryption stream error: %v", err)
+			xl.Errorf("创建加密流错误: %v", err)
 			return nil, err
 		}
 	}

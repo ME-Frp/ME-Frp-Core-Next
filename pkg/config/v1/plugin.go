@@ -49,12 +49,12 @@ func (c *TypedClientPluginOptions) UnmarshalJSON(b []byte) error {
 
 	c.Type = typeStruct.Type
 	if c.Type == "" {
-		return errors.New("plugin type is empty")
+		return errors.New("Plugin 类型不能为空")
 	}
 
 	v, ok := clientPluginOptionsTypeMap[typeStruct.Type]
 	if !ok {
-		return fmt.Errorf("unknown plugin type: %s", typeStruct.Type)
+		return fmt.Errorf("未知 Plugin 类型: %s", typeStruct.Type)
 	}
 	options := reflect.New(v).Interface().(ClientPluginOptions)
 
@@ -64,7 +64,7 @@ func (c *TypedClientPluginOptions) UnmarshalJSON(b []byte) error {
 	}
 
 	if err := decoder.Decode(options); err != nil {
-		return fmt.Errorf("unmarshal ClientPluginOptions error: %v", err)
+		return fmt.Errorf("处理 ClientPluginOptions 失败: %v", err)
 	}
 	c.ClientPluginOptions = options
 	return nil

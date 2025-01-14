@@ -19,9 +19,9 @@ import (
 )
 
 var (
-	ErrGroupAuthFailed    = errors.New("group auth failed")
-	ErrGroupParamsInvalid = errors.New("group params invalid")
-	ErrListenerClosed     = errors.New("group listener closed")
-	ErrGroupDifferentPort = errors.New("group should have same remote port")
-	ErrProxyRepeated      = errors.New("group proxy repeated")
+	ErrGroupAuthFailed    = errors.New("组验证失败")
+	ErrGroupParamsInvalid = errors.New("组参数无效")
+	ErrListenerClosed     = errors.New("组监听器已关闭")
+	ErrGroupDifferentPort = errors.New("组应具有相同的远程端口")
+	ErrProxyRepeated      = errors.New("隧道重复")
 )

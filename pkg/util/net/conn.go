@@ -112,21 +112,21 @@ func (conn *WrapReadWriteCloserConn) SetDeadline(t time.Time) error {
 	if conn.underConn != nil {
 		return conn.underConn.SetDeadline(t)
 	}
-	return &net.OpError{Op: "set", Net: "wrap", Source: nil, Addr: nil, Err: errors.New("deadline not supported")}
+	return &net.OpError{Op: "set", Net: "wrap", Source: nil, Addr: nil, Err: errors.New("设置截止时间不支持")}
 }
 
 func (conn *WrapReadWriteCloserConn) SetReadDeadline(t time.Time) error {
 	if conn.underConn != nil {
 		return conn.underConn.SetReadDeadline(t)
 	}
-	return &net.OpError{Op: "set", Net: "wrap", Source: nil, Addr: nil, Err: errors.New("deadline not supported")}
+	return &net.OpError{Op: "set", Net: "wrap", Source: nil, Addr: nil, Err: errors.New("设置读截止时间不支持")}
 }
 
 func (conn *WrapReadWriteCloserConn) SetWriteDeadline(t time.Time) error {
 	if conn.underConn != nil {
 		return conn.underConn.SetWriteDeadline(t)
 	}
-	return &net.OpError{Op: "set", Net: "wrap", Source: nil, Addr: nil, Err: errors.New("deadline not supported")}
+	return &net.OpError{Op: "set", Net: "wrap", Source: nil, Addr: nil, Err: errors.New("设置写截止时间不支持")}
 }
 
 type CloseNotifyConn struct {

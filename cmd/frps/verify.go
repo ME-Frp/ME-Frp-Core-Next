@@ -30,10 +30,10 @@ func init() {
 
 var verifyCmd = &cobra.Command{
 	Use:   "verify",
-	Short: "Verify that the configures is valid",
+	Short: "验证配置文件是否有效",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cfgFile == "" {
-			fmt.Println("frps: the configuration file is not specified")
+			fmt.Println("ME Frp 服务端: 未指定配置文件")
 			return nil
 		}
 		svrCfg, _, err := config.LoadServerConfig(cfgFile, strictConfigMode)
@@ -44,13 +44,13 @@ var verifyCmd = &cobra.Command{
 
 		warning, err := validation.ValidateServerConfig(svrCfg)
 		if warning != nil {
-			fmt.Printf("WARNING: %v\n", warning)
+			fmt.Printf("警告: %v\n", warning)
 		}
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Printf("frps: the configuration file %s syntax is ok\n", cfgFile)
+		fmt.Printf("ME Frp 服务端: 配置文件 %s 语法正确\n", cfgFile)
 		return nil
 	},
 }

@@ -62,7 +62,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 		}()
 		pxy.realBindPort = realBindPort
 		pxy.listeners = append(pxy.listeners, l)
-		xl.Infof("tcp proxy listen port [%d] in group [%s]", pxy.cfg.RemotePort, pxy.cfg.LoadBalancer.Group)
+		xl.Infof("TCP 隧道在组 [%s] 中监听端口 [%d]", pxy.cfg.LoadBalancer.Group, pxy.cfg.RemotePort)
 	} else {
 		pxy.realBindPort, err = pxy.rc.TCPPortManager.Acquire(pxy.name, pxy.cfg.RemotePort)
 		if err != nil {
@@ -79,7 +79,7 @@ func (pxy *TCPProxy) Run() (remoteAddr string, err error) {
 			return
 		}
 		pxy.listeners = append(pxy.listeners, listener)
-		xl.Infof("tcp proxy listen port [%d]", pxy.cfg.RemotePort)
+		xl.Infof("TCP 隧道监听端口 [%d]", pxy.cfg.RemotePort)
 	}
 
 	pxy.cfg.RemotePort = pxy.realBindPort

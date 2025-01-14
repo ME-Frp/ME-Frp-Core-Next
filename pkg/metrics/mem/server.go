@@ -62,7 +62,7 @@ func (m *serverMetrics) run() {
 			time.Sleep(12 * time.Hour)
 			start := time.Now()
 			count, total := m.clearUselessInfo(time.Duration(7*24) * time.Hour)
-			log.Debugf("clear useless proxy statistics data count %d/%d, cost %v", count, total, time.Since(start))
+			log.Debugf("清除无用隧道统计数据 %d/%d, 耗时 %v", count, total, time.Since(start))
 		}
 	}()
 }
@@ -80,7 +80,7 @@ func (m *serverMetrics) clearUselessInfo(continuousOfflineDuration time.Duration
 			time.Since(data.LastCloseTime) > continuousOfflineDuration {
 			delete(m.info.ProxyStatistics, name)
 			count++
-			log.Tracef("clear proxy [%s]'s statistics data, lastCloseTime: [%s]", name, data.LastCloseTime.String())
+			log.Tracef("清除隧道 [%s] 的统计数据, 上次关闭时间: [%s]", name, data.LastCloseTime.String())
 		}
 	}
 	return count, total

@@ -12,7 +12,7 @@ import (
 var _ = ginkgo.Describe("[Feature: Heartbeat]", func() {
 	f := framework.NewDefaultFramework()
 
-	ginkgo.It("disable application layer heartbeat", func() {
+	ginkgo.It("禁用应用层心跳", func() {
 		serverPort := f.AllocPort()
 		serverConf := fmt.Sprintf(`
 		[common]

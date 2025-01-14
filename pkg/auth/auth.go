@@ -34,7 +34,7 @@ func NewAuthSetter(cfg v1.AuthClientConfig) (authProvider Setter) {
 	case v1.AuthMethodOIDC:
 		authProvider = NewOidcAuthSetter(cfg.AdditionalScopes, cfg.OIDC)
 	default:
-		panic(fmt.Sprintf("wrong method: '%s'", cfg.Method))
+		panic(fmt.Sprintf("验证方法错误: '%s'", cfg.Method))
 	}
 	return authProvider
 }

@@ -53,7 +53,7 @@ func (pxy *STCPProxy) Run() (remoteAddr string, err error) {
 		return
 	}
 	pxy.listeners = append(pxy.listeners, listener)
-	xl.Infof("stcp proxy custom listen success")
+	xl.Infof("STCP 隧道监听成功")
 
 	pxy.startCommonTCPListenersHandler()
 	return

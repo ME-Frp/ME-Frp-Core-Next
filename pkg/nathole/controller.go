@@ -115,7 +115,7 @@ func (c *Controller) CleanWorker(ctx context.Context) {
 		case <-ticker.C:
 			start := time.Now()
 			count, total := c.analyzer.Clean()
-			log.Tracef("clean %d/%d nathole analysis data, cost %v", count, total, time.Since(start))
+			log.Tracef("清除 %d/%d 条 NAT 分析数据, 耗时 %v", count, total, time.Since(start))
 		case <-ctx.Done():
 			return
 		}
@@ -132,7 +132,7 @@ func (c *Controller) ListenClient(name string, sk string, allowUsers []string) (
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if _, ok := c.clientCfgs[name]; ok {
-		return nil, fmt.Errorf("proxy [%s] is repeated", name)
+		return nil, fmt.Errorf("隧道 [%s] 已存在", name)
 	}
 	c.clientCfgs[name] = cfg
 	return cfg.sidCh, nil
@@ -154,11 +154,11 @@ func (c *Controller) HandleVisitor(m *msg.NatHoleVisitor, transporter transport.
 	if m.PreCheck {
 		cfg, ok := c.clientCfgs[m.ProxyName]
 		if !ok {
-			_ = transporter.Send(c.GenNatHoleResponse(m.TransactionID, nil, fmt.Sprintf("xtcp server for [%s] doesn't exist", m.ProxyName)))
+			_ = transporter.Send(c.GenNatHoleResponse(m.TransactionID, nil, fmt.Sprintf("隧道 [%s] 的 XTCP 服务端不存在", m.ProxyName)))
 			return
 		}
 		if !slices.Contains(cfg.allowUsers, visitorUser) && !slices.Contains(cfg.allowUsers, "*") {
-			_ = transporter.Send(c.GenNatHoleResponse(m.TransactionID, nil, fmt.Sprintf("xtcp visitor user [%s] not allowed for [%s]", visitorUser, m.ProxyName)))
+			_ = transporter.Send(c.GenNatHoleResponse(m.TransactionID, nil, fmt.Sprintf("隧道 [%s] 的 XTCP 访问者 [%s] 被禁止", m.ProxyName, visitorUser)))
 			return
 		}
 		_ = transporter.Send(c.GenNatHoleResponse(m.TransactionID, nil, ""))
@@ -182,20 +182,20 @@ func (c *Controller) HandleVisitor(m *msg.NatHoleVisitor, transporter transport.
 
 		clientCfg, ok = c.clientCfgs[m.ProxyName]
 		if !ok {
-			return fmt.Errorf("xtcp server for [%s] doesn't exist", m.ProxyName)
+			return fmt.Errorf("隧道 [%s] 的 XTCP 服务端不存在", m.ProxyName)
 		}
 		if !util.ConstantTimeEqString(m.SignKey, util.GetAuthKey(clientCfg.sk, m.Timestamp)) {
-			return fmt.Errorf("xtcp connection of [%s] auth failed", m.ProxyName)
+			return fmt.Errorf("隧道 [%s] 的 XTCP 连接认证失败", m.ProxyName)
 		}
 		c.sessions[sid] = session
 		return nil
 	}()
 	if err != nil {
-		log.Warnf("handle visitorMsg error: %v", err)
+		log.Warnf("处理访问者消息错误: %v", err)
 		_ = transporter.Send(c.GenNatHoleResponse(m.TransactionID, nil, err.Error()))
 		return
 	}
-	log.Tracef("handle visitor message, sid [%s], server name: %s", sid, m.ProxyName)
+	log.Tracef("处理隧道 [%s] 的访问者消息, sid [%s]", m.ProxyName, sid)
 
 	defer func() {
 		c.mu.Lock()
@@ -213,14 +213,14 @@ func (c *Controller) HandleVisitor(m *msg.NatHoleVisitor, transporter transport.
 	select {
 	case <-session.notifyCh:
 	case <-time.After(time.Duration(NatHoleTimeout) * time.Second):
-		log.Debugf("wait for NatHoleClient message timeout, sid [%s]", sid)
+		log.Debugf("等待隧道 [%s] 的 NAT 客户端消息超时, sid [%s]", m.ProxyName, sid)
 		return
 	}
 
 	// Make hole-punching decisions based on the NAT information of the client and visitor.
 	vResp, cResp, err := c.analysis(session)
 	if err != nil {
-		log.Debugf("sid [%s] analysis error: %v", err)
+		log.Debugf("sid [%s] 分析错误: %v", sid, err)
 		vResp = c.GenNatHoleResponse(session.visitorMsg.TransactionID, nil, err.Error())
 		cResp = c.GenNatHoleResponse(session.clientMsg.TransactionID, nil, err.Error())
 	}
@@ -257,7 +257,7 @@ func (c *Controller) HandleClient(m *msg.NatHoleClient, transporter transport.Me
 	if !ok {
 		return
 	}
-	log.Tracef("handle client message, sid [%s], server name: %s", session.sid, m.ProxyName)
+	log.Tracef("处理服务端 [%s] 的客户端消息, sid [%s]", m.ProxyName, session.sid)
 	session.clientMsg = m
 	session.clientTransporter = transporter
 	select {
@@ -271,13 +271,13 @@ func (c *Controller) HandleReport(m *msg.NatHoleReport) {
 	session, ok := c.sessions[m.Sid]
 	c.mu.RUnlock()
 	if !ok {
-		log.Tracef("sid [%s] report make hole success: %v, but session not found", m.Sid, m.Success)
+		log.Tracef("sid [%s] 报告 NAT 穿透成功: %v, 但会话未找到", m.Sid, m.Success)
 		return
 	}
 	if m.Success {
 		c.analyzer.ReportSuccess(session.analysisKey, session.recommandMode, session.recommandIndex)
 	}
-	log.Infof("sid [%s] report make hole success: %v, mode %v, index %v",
+	log.Infof("sid [%s] 报告 NAT 穿透成功: %v, 模式 %v, 索引 %v",
 		m.Sid, m.Success, session.recommandMode, session.recommandIndex)
 }
 
@@ -301,12 +301,12 @@ func (c *Controller) analysis(session *Session) (*msg.NatHoleResp, *msg.NatHoleR
 
 	cNatFeature, err := ClassifyNATFeature(cm.MappedAddrs, parseIPs(cm.AssistedAddrs))
 	if err != nil {
-		return nil, nil, fmt.Errorf("classify client nat feature error: %v", err)
+		return nil, nil, fmt.Errorf("分类客户端 NAT 特征错误: %v", err)
 	}
 
 	vNatFeature, err := ClassifyNATFeature(vm.MappedAddrs, parseIPs(vm.AssistedAddrs))
 	if err != nil {
-		return nil, nil, fmt.Errorf("classify visitor nat feature error: %v", err)
+		return nil, nil, fmt.Errorf("分类访问者 NAT 特征错误: %v", err)
 	}
 	session.cNatFeature = cNatFeature
 	session.vNatFeature = vNatFeature
@@ -359,10 +359,10 @@ func (c *Controller) analysis(session *Session) (*msg.NatHoleResp, *msg.NatHoleR
 		},
 	}
 
-	log.Debugf("sid [%s] visitor nat: %+v, candidateAddrs: %v; client nat: %+v, candidateAddrs: %v, protocol: %s",
+	log.Debugf("sid [%s] 访问者 NAT: %+v, 候选地址: %v; 服务端 NAT: %+v, 候选地址: %v, 协议: %s",
 		session.sid, *vNatFeature, vm.MappedAddrs, *cNatFeature, cm.MappedAddrs, protocol)
-	log.Debugf("sid [%s] visitor detect behavior: %+v", session.sid, vResp.DetectBehavior)
-	log.Debugf("sid [%s] client detect behavior: %+v", session.sid, cResp.DetectBehavior)
+	log.Debugf("sid [%s] 访问者检测行为: %+v", session.sid, vResp.DetectBehavior)
+	log.Debugf("sid [%s] 服务端检测行为: %+v", session.sid, cResp.DetectBehavior)
 	return vResp, cResp, nil
 }
 

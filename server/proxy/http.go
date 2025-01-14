@@ -108,7 +108,7 @@ func (pxy *HTTPProxy) Run() (remoteAddr string, err error) {
 				})
 			}
 			addrs = append(addrs, util.CanonicalAddr(routeConfig.Domain, pxy.serverCfg.VhostHTTPPort))
-			xl.Infof("http proxy listen for host [%s] location [%s] group [%s], routeByHTTPUser [%s]",
+			xl.Infof("HTTP 隧道监听主机 [%s] 位置 [%s] 组 [%s] routeByHTTPUser [%s]",
 				routeConfig.Domain, routeConfig.Location, pxy.cfg.LoadBalancer.Group, pxy.cfg.RouteByHTTPUser)
 		}
 	}
@@ -141,7 +141,7 @@ func (pxy *HTTPProxy) Run() (remoteAddr string, err error) {
 			}
 			addrs = append(addrs, util.CanonicalAddr(tmpRouteConfig.Domain, pxy.serverCfg.VhostHTTPPort))
 
-			xl.Infof("http proxy listen for host [%s] location [%s] group [%s], routeByHTTPUser [%s]",
+			xl.Infof("HTTP 隧道监听主机 [%s] 位置 [%s] 组 [%s] routeByHTTPUser [%s]",
 				routeConfig.Domain, routeConfig.Location, pxy.cfg.LoadBalancer.Group, pxy.cfg.RouteByHTTPUser)
 		}
 	}
@@ -153,8 +153,8 @@ func (pxy *HTTPProxy) GetRealConn(remoteAddr string) (workConn net.Conn, err err
 	xl := pxy.xl
 	rAddr, errRet := net.ResolveTCPAddr("tcp", remoteAddr)
 	if errRet != nil {
-		xl.Warnf("resolve TCP addr [%s] error: %v", remoteAddr, errRet)
-		// we do not return error here since remoteAddr is not necessary for proxies without proxy protocol enabled
+		xl.Warnf("解析 TCP 地址 [%s] 失败: %v", remoteAddr, errRet)
+		// 我们不在此处返回错误，因为 remoteAddr 对于没有启用隧道协议的隧道来说不是必需的
 	}
 
 	tmpConn, errRet := pxy.GetWorkConnFromPool(rAddr, nil)
@@ -167,7 +167,7 @@ func (pxy *HTTPProxy) GetRealConn(remoteAddr string) (workConn net.Conn, err err
 	if pxy.cfg.Transport.UseEncryption {
 		rwc, err = libio.WithEncryption(rwc, []byte(pxy.serverCfg.Auth.Token))
 		if err != nil {
-			xl.Errorf("create encryption stream error: %v", err)
+			xl.Errorf("创建加密流失败: %v", err)
 			return
 		}
 	}

@@ -41,7 +41,7 @@ type NatFeature struct {
 
 func ClassifyNATFeature(addresses []string, localIPs []string) (*NatFeature, error) {
 	if len(addresses) <= 1 {
-		return nil, fmt.Errorf("not enough addresses")
+		return nil, fmt.Errorf("地址数量不足")
 	}
 	natFeature := &NatFeature{}
 	ipChanged := false

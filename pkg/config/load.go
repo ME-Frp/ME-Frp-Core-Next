@@ -285,7 +285,7 @@ func LoadAdditionalClientConfigs(paths []string, isLegacyFormat bool, strict boo
 				// support yaml/json/toml
 				cfg := v1.ClientConfig{}
 				if err := LoadConfigureFromFile(absFile, &cfg, strict); err != nil {
-					return nil, nil, fmt.Errorf("load additional config from %s error: %v", absFile, err)
+					return nil, nil, fmt.Errorf("加载额外配置文件 %s 失败: %v", absFile, err)
 				}
 				for _, c := range cfg.Proxies {
 					proxyCfgs = append(proxyCfgs, c.ProxyConfigurer)

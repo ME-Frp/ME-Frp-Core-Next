@@ -93,11 +93,11 @@ func PreCheck(
 		PreCheck:      true,
 	}, transactionID, msg.TypeNameNatHoleResp)
 	if err != nil {
-		return fmt.Errorf("get natHoleRespMsg error: %v", err)
+		return fmt.Errorf("获取 NAT 响应消息错误: %v", err)
 	}
 	mm, ok := m.(*msg.NatHoleResp)
 	if !ok {
-		return fmt.Errorf("get natHoleRespMsg error: invalid message type")
+		return fmt.Errorf("获取 NAT 响应消息错误: 无效的消息类型")
 	}
 	natHoleRespMsg = mm
 
@@ -112,25 +112,25 @@ func Prepare(stunServers []string) (*PrepareResult, error) {
 	// discover for Nat type
 	addrs, localAddr, err := Discover(stunServers, "")
 	if err != nil {
-		return nil, fmt.Errorf("discover error: %v", err)
+		return nil, fmt.Errorf("发现 NAT 类型错误: %v", err)
 	}
 	if len(addrs) < 2 {
-		return nil, fmt.Errorf("discover error: not enough addresses")
+		return nil, fmt.Errorf("发现 NAT 类型错误: 地址数量不足")
 	}
 
 	localIPs, _ := ListLocalIPsForNatHole(10)
 	natFeature, err := ClassifyNATFeature(addrs, localIPs)
 	if err != nil {
-		return nil, fmt.Errorf("classify nat feature error: %v", err)
+		return nil, fmt.Errorf("分类 NAT 类型错误: %v", err)
 	}
 
 	laddr, err := net.ResolveUDPAddr("udp4", localAddr.String())
 	if err != nil {
-		return nil, fmt.Errorf("resolve local udp addr error: %v", err)
+		return nil, fmt.Errorf("解析本地 UDP 地址错误: %v", err)
 	}
 	listenConn, err := net.ListenUDP("udp4", laddr)
 	if err != nil {
-		return nil, fmt.Errorf("listen local udp addr error: %v", err)
+		return nil, fmt.Errorf("监听本地 UDP 地址错误: %v", err)
 	}
 
 	assistedAddrs := make([]string, 0, len(localIPs))
@@ -160,19 +160,19 @@ func ExchangeInfo(
 	var natHoleRespMsg *msg.NatHoleResp
 	m, err := transporter.Do(timeoutCtx, m, laneKey, msg.TypeNameNatHoleResp)
 	if err != nil {
-		return nil, fmt.Errorf("get natHoleRespMsg error: %v", err)
+		return nil, fmt.Errorf("获取 NAT 响应消息错误: %v", err)
 	}
 	mm, ok := m.(*msg.NatHoleResp)
 	if !ok {
-		return nil, fmt.Errorf("get natHoleRespMsg error: invalid message type")
+		return nil, fmt.Errorf("获取 NAT 响应消息错误: 无效的消息类型")
 	}
 	natHoleRespMsg = mm
 
 	if natHoleRespMsg.Error != "" {
-		return nil, fmt.Errorf("natHoleRespMsg get error info: %s", natHoleRespMsg.Error)
+		return nil, fmt.Errorf("获取 NAT 响应消息错误: %s", natHoleRespMsg.Error)
 	}
 	if len(natHoleRespMsg.CandidateAddrs) == 0 {
-		return nil, fmt.Errorf("natHoleRespMsg get empty candidate addresses")
+		return nil, fmt.Errorf("获取 NAT 响应消息错误: 候选地址为空")
 	}
 	return natHoleRespMsg, nil
 }
@@ -204,7 +204,7 @@ func MakeHole(ctx context.Context, listenConn *net.UDPConn, m *msg.NatHoleResp, 
 			for i := 0; i < m.DetectBehavior.ListenRandomPorts; i++ {
 				tmpConn, err := net.ListenUDP("udp4", nil)
 				if err != nil {
-					xl.Warnf("listen random udp addr error: %v", err)
+					xl.Warnf("监听随机 UDP 地址错误: %v", err)
 					continue
 				}
 				listenConns = append(listenConns, tmpConn)
@@ -216,7 +216,7 @@ func MakeHole(ctx context.Context, listenConn *net.UDPConn, m *msg.NatHoleResp, 
 	for _, detectAddr := range detectAddrs {
 		for _, conn := range listenConns {
 			if err := sendSidMessage(ctx, conn, m.Sid, transactionID, detectAddr, key, m.DetectBehavior.TTL); err != nil {
-				xl.Tracef("send sid message from %s to %s error: %v", conn.LocalAddr(), detectAddr, err)
+				xl.Tracef("从 %s 发送 sid 消息到 %s 错误: %v", conn.LocalAddr(), detectAddr, err)
 			}
 		}
 	}
@@ -241,7 +241,7 @@ func MakeHole(ctx context.Context, listenConn *net.UDPConn, m *msg.NatHoleResp, 
 	if len(listenConns) == 1 {
 		raddr, err := waitDetectMessage(ctx, listenConns[0], m.Sid, key, timeout, m.DetectBehavior.Role)
 		if err != nil {
-			return nil, nil, fmt.Errorf("wait detect message error: %v", err)
+			return nil, nil, fmt.Errorf("等待检测消息错误: %v", err)
 		}
 		return listenConns[0], raddr, nil
 	}
@@ -270,9 +270,9 @@ func MakeHole(ctx context.Context, listenConn *net.UDPConn, m *msg.NatHoleResp, 
 	case result := <-resultCh:
 		return result.lConn, result.raddr, nil
 	case <-time.After(timeout):
-		return nil, nil, fmt.Errorf("wait detect message timeout")
+		return nil, nil, fmt.Errorf("等待检测消息超时")
 	case <-ctx.Done():
-		return nil, nil, fmt.Errorf("wait detect message canceled")
+		return nil, nil, fmt.Errorf("等待检测消息取消")
 	}
 }
 
@@ -289,16 +289,16 @@ func waitDetectMessage(
 		if err != nil {
 			return nil, err
 		}
-		xl.Debugf("get udp message local %s, from %s", conn.LocalAddr(), raddr)
+		xl.Debugf("从 %s 获取 UDP 消息, 本地地址: %s", raddr, conn.LocalAddr())
 		var m msg.NatHoleSid
 		if err := DecodeMessageInto(buf[:n], key, &m); err != nil {
-			xl.Warnf("decode sid message error: %v", err)
+			xl.Warnf("解码 sid 消息错误: %v", err)
 			continue
 		}
 		pool.PutBuf(buf)
 
 		if m.Sid != sid {
-			xl.Warnf("get sid message with wrong sid: %s, expect: %s", m.Sid, sid)
+			xl.Warnf("获取 sid 消息错误: sid 不匹配, 实际: %s, 预期: %s", m.Sid, sid)
 			continue
 		}
 
@@ -311,7 +311,7 @@ func waitDetectMessage(
 			m.Response = true
 			buf2, err := EncodeMessage(&m, key)
 			if err != nil {
-				xl.Warnf("encode sid message error: %v", err)
+				xl.Warnf("编码 sid 消息错误: %v", err)
 				continue
 			}
 			_, _ = conn.WriteToUDP(buf2, raddr)
@@ -327,9 +327,9 @@ func sendSidMessage(
 	xl := xlog.FromContextSafe(ctx)
 	ttlStr := ""
 	if ttl > 0 {
-		ttlStr = fmt.Sprintf(" with ttl %d", ttl)
+		ttlStr = fmt.Sprintf(" with TTL %d", ttl)
 	}
-	xl.Tracef("send sid message from %s to %s%s", conn.LocalAddr(), addr, ttlStr)
+	xl.Tracef("从 %s 发送 SID 消息到 %s%s", conn.LocalAddr(), addr, ttlStr)
 	raddr, err := net.ResolveUDPAddr("udp4", addr)
 	if err != nil {
 		return err
@@ -351,14 +351,14 @@ func sendSidMessage(
 		uConn := ipv4.NewConn(conn)
 		original, err := uConn.TTL()
 		if err != nil {
-			xl.Tracef("get ttl error %v", err)
+			xl.Tracef("获取 TTL 错误: %v", err)
 			return err
 		}
-		xl.Tracef("original ttl %d", original)
+		xl.Tracef("原始 TTL: %d", original)
 
 		err = uConn.SetTTL(ttl)
 		if err != nil {
-			xl.Tracef("set ttl error %v", err)
+			xl.Tracef("设置 TTL 错误: %v", err)
 		} else {
 			defer func() {
 				_ = uConn.SetTTL(original)
@@ -382,7 +382,7 @@ func sendSidMessageToRangePorts(
 			for i := portsRange.From; i <= portsRange.To; i++ {
 				detectAddr := net.JoinHostPort(ip, strconv.Itoa(i))
 				if err := sendFunc(conn, detectAddr); err != nil {
-					xl.Tracef("send sid message from %s to %s error: %v", conn.LocalAddr(), detectAddr, err)
+					xl.Tracef("从 %s 发送 SID 消息到 %s 错误: %v", conn.LocalAddr(), detectAddr, err)
 				}
 				time.Sleep(2 * time.Millisecond)
 			}
@@ -422,7 +422,7 @@ func sendSidMessageToRandomPorts(
 		for _, ip := range slices.Compact(parseIPs(addrs)) {
 			detectAddr := net.JoinHostPort(ip, strconv.Itoa(port))
 			if err := sendFunc(conn, detectAddr); err != nil {
-				xl.Tracef("send sid message from %s to %s error: %v", conn.LocalAddr(), detectAddr, err)
+				xl.Tracef("从 %s 发送 SID 消息到 %s 错误: %v", conn.LocalAddr(), detectAddr, err)
 			}
 			time.Sleep(time.Millisecond * 15)
 		}

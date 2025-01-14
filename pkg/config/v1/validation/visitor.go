@@ -34,29 +34,29 @@ func ValidateVisitorConfigurer(c v1.VisitorConfigurer) error {
 	case *v1.XTCPVisitorConfig:
 		return validateXTCPVisitorConfig(v)
 	default:
-		return errors.New("unknown visitor config type")
+		return errors.New("未知访问者配置类型")
 	}
 	return nil
 }
 
 func validateVisitorBaseConfig(c *v1.VisitorBaseConfig) error {
 	if c.Name == "" {
-		return errors.New("name is required")
+		return errors.New("访问者名不能为空")
 	}
 
 	if c.ServerName == "" {
-		return errors.New("server name is required")
+		return errors.New("服务端名不能为空")
 	}
 
 	if c.BindPort == 0 {
-		return errors.New("bind port is required")
+		return errors.New("绑定端口不能为空")
 	}
 	return nil
 }
 
 func validateXTCPVisitorConfig(c *v1.XTCPVisitorConfig) error {
 	if !slices.Contains([]string{"kcp", "quic"}, c.Protocol) {
-		return fmt.Errorf("protocol should be kcp or quic")
+		return fmt.Errorf("协议应为 [kcp] 或 [quic]")
 	}
 	return nil
 }

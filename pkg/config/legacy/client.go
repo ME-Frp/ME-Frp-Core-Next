@@ -184,7 +184,7 @@ func UnmarshalClientConfFromIni(source any) (ClientCommonConf, error) {
 
 	s, err := f.GetSection("common")
 	if err != nil {
-		return ClientCommonConf{}, fmt.Errorf("invalid configuration file, not found [common] section")
+		return ClientCommonConf{}, fmt.Errorf("配置文件无效, 未找到 [common] 节")
 	}
 
 	common := GetDefaultClientConf()
@@ -248,7 +248,7 @@ func LoadAllProxyConfsFromIni(
 	for _, section := range rangeSections {
 		err = renderRangeProxyTemplates(f, section)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to render template for proxy %s: %v", section.Name(), err)
+			return nil, nil, fmt.Errorf("无法生成隧道 %s 的模板: %v", section.Name(), err)
 		}
 	}
 
@@ -273,17 +273,17 @@ func LoadAllProxyConfsFromIni(
 		case "server":
 			newConf, newErr := NewProxyConfFromIni(prefix, name, section)
 			if newErr != nil {
-				return nil, nil, fmt.Errorf("failed to parse proxy %s, err: %v", name, newErr)
+				return nil, nil, fmt.Errorf("无法解析隧道 [%s] : %v", name, newErr)
 			}
 			proxyConfs[prefix+name] = newConf
 		case "visitor":
 			newConf, newErr := NewVisitorConfFromIni(prefix, name, section)
 			if newErr != nil {
-				return nil, nil, fmt.Errorf("failed to parse visitor %s, err: %v", name, newErr)
+				return nil, nil, fmt.Errorf("无法解析访客 [%s] : %v", name, newErr)
 			}
 			visitorConfs[prefix+name] = newConf
 		default:
-			return nil, nil, fmt.Errorf("proxy %s role should be 'server' or 'visitor'", name)
+			return nil, nil, fmt.Errorf("隧道 [%s] 的角色应为 'server' 或 'visitor'", name)
 		}
 	}
 	return proxyConfs, visitorConfs, nil
@@ -294,7 +294,7 @@ func renderRangeProxyTemplates(f *ini.File, section *ini.Section) error {
 	localPortStr := section.Key("local_port").String()
 	remotePortStr := section.Key("remote_port").String()
 	if localPortStr == "" || remotePortStr == "" {
-		return fmt.Errorf("local_port or remote_port is empty")
+		return fmt.Errorf("local_port 或 remote_port 为空")
 	}
 
 	localPorts, err := util.ParseRangeNumbers(localPortStr)
@@ -308,11 +308,11 @@ func renderRangeProxyTemplates(f *ini.File, section *ini.Section) error {
 	}
 
 	if len(localPorts) != len(remotePorts) {
-		return fmt.Errorf("local ports number should be same with remote ports number")
+		return fmt.Errorf("本地端口数量应与远程端口数量相同")
 	}
 
 	if len(localPorts) == 0 {
-		return fmt.Errorf("local_port and remote_port is necessary")
+		return fmt.Errorf("local_port 和 remote_port 是必需的")
 	}
 
 	// Templates
@@ -328,10 +328,10 @@ func renderRangeProxyTemplates(f *ini.File, section *ini.Section) error {
 
 		copySection(section, tmpsection)
 		if _, err := tmpsection.NewKey("local_port", fmt.Sprintf("%d", localPorts[i])); err != nil {
-			return fmt.Errorf("local_port new key in section error: %v", err)
+			return fmt.Errorf("在节中创建 local_port 键时出错: %v", err)
 		}
 		if _, err := tmpsection.NewKey("remote_port", fmt.Sprintf("%d", remotePorts[i])); err != nil {
-			return fmt.Errorf("remote_port new key in section error: %v", err)
+			return fmt.Errorf("在节中创建 remote_port 键时出错: %v", err)
 		}
 	}
 
@@ -365,35 +365,35 @@ func GetDefaultClientConf() ClientCommonConf {
 func (cfg *ClientCommonConf) Validate() error {
 	if cfg.HeartbeatTimeout > 0 && cfg.HeartbeatInterval > 0 {
 		if cfg.HeartbeatTimeout < cfg.HeartbeatInterval {
-			return fmt.Errorf("invalid heartbeat_timeout, heartbeat_timeout is less than heartbeat_interval")
+			return fmt.Errorf("心跳包超时时间小于心跳包间隔时间")
 		}
 	}
 
 	if !cfg.TLSEnable {
 		if cfg.TLSCertFile != "" {
-			fmt.Println("WARNING! tls_cert_file is invalid when tls_enable is false")
+			fmt.Println("警告! tls_cert_file 在 tls_enable 为 false 时无效")
 		}
 
 		if cfg.TLSKeyFile != "" {
-			fmt.Println("WARNING! tls_key_file is invalid when tls_enable is false")
+			fmt.Println("警告! tls_key_file 在 tls_enable 为 false 时无效")
 		}
 
 		if cfg.TLSTrustedCaFile != "" {
-			fmt.Println("WARNING! tls_trusted_ca_file is invalid when tls_enable is false")
+			fmt.Println("警告! tls_trusted_ca_file 在 tls_enable 为 false 时无效")
 		}
 	}
 
 	if !slices.Contains([]string{"tcp", "kcp", "quic", "websocket", "wss"}, cfg.Protocol) {
-		return fmt.Errorf("invalid protocol")
+		return fmt.Errorf("协议无效")
 	}
 
 	for _, f := range cfg.IncludeConfigFiles {
 		absDir, err := filepath.Abs(filepath.Dir(f))
 		if err != nil {
-			return fmt.Errorf("include: parse directory of %s failed: %v", f, err)
+			return fmt.Errorf("Include: 解析 %s 的目录失败: %v", f, err)
 		}
 		if _, err := os.Stat(absDir); os.IsNotExist(err) {
-			return fmt.Errorf("include: directory of %s not exist", f)
+			return fmt.Errorf("Include: %s 的目录不存在", f)
 		}
 	}
 	return nil

@@ -47,7 +47,7 @@ func init() {
 	for _, typ := range proxyTypes {
 		c := v1.NewProxyConfigurerByType(typ)
 		if c == nil {
-			panic("proxy type: " + typ + " not support")
+			panic("不支持" + typ + "协议的隧道")
 		}
 		clientCfg := v1.ClientCommonConfig{}
 		cmd := NewProxyCommand(string(typ), c, &clientCfg)
@@ -58,7 +58,7 @@ func init() {
 		if slices.Contains(visitorTypes, v1.VisitorType(typ)) {
 			vc := v1.NewVisitorConfigurerByType(v1.VisitorType(typ))
 			if vc == nil {
-				panic("visitor type: " + typ + " not support")
+				panic("不支持" + typ + "协议的访问者")
 			}
 			visitorCmd := NewVisitorCommand(string(typ), vc, &clientCfg)
 			config.RegisterVisitorFlags(visitorCmd, vc)
@@ -71,7 +71,7 @@ func init() {
 func NewProxyCommand(name string, c v1.ProxyConfigurer, clientCfg *v1.ClientCommonConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   name,
-		Short: fmt.Sprintf("Run frpc with a single %s proxy", name),
+		Short: fmt.Sprintf("启动 ME Frp 隧道 [%s]", name),
 		Run: func(cmd *cobra.Command, args []string) {
 			clientCfg.Complete()
 			if _, err := validation.ValidateClientCommonConfig(clientCfg); err != nil {
@@ -97,7 +97,7 @@ func NewProxyCommand(name string, c v1.ProxyConfigurer, clientCfg *v1.ClientComm
 func NewVisitorCommand(name string, c v1.VisitorConfigurer, clientCfg *v1.ClientCommonConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "visitor",
-		Short: fmt.Sprintf("Run frpc with a single %s visitor", name),
+		Short: fmt.Sprintf("启动 ME Frp 访问者 [%s]", name),
 		Run: func(cmd *cobra.Command, args []string) {
 			clientCfg.Complete()
 			if _, err := validation.ValidateClientCommonConfig(clientCfg); err != nil {

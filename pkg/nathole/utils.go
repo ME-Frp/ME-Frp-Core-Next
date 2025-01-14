@@ -80,7 +80,7 @@ func ListAllLocalIPs() ([]net.IP, error) {
 
 func ListLocalIPsForNatHole(maxItems int) ([]string, error) {
 	if maxItems <= 0 {
-		return nil, fmt.Errorf("maxItems must be greater than 0")
+		return nil, fmt.Errorf("NAT 探测的地址数量必须大于 0")
 	}
 
 	ips, err := ListAllLocalIPs()

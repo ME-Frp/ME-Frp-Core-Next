@@ -28,23 +28,38 @@ var NotFoundPagePath = ""
 
 const (
 	NotFound = `<!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-<title>Not Found</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>镜缘映射 · ME Frp</title>
 <style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
+body{font-family:Arial,sans-serif;background-color:#f4f4f4;margin:0;line-height:1.6;padding:0}
+.container{width:100%;max-width:600px;margin:0 auto;background-color:#fff;padding:20px;box-shadow:0 0 10px rgba(0,0,0,.1);font-size:16px}
+.header{text-align:center;padding:10px 0;display:flex;align-items:center;justify-content:center}
+.header img{height:48px;width:48px;margin-right:10px}
+.header h1{margin:0;font-size:30px}
+.content{margin:20px 0}
+.footer{text-align:center;color:#888;font-size:12px;margin-top:20px}
 </style>
 </head>
 <body>
-<h1>The page you requested was not found.</h1>
-<p>Sorry, the page you are looking for is currently unavailable.<br/>
-Please try again later.</p>
-<p>The server is powered by <a href="https://github.com/fatedier/frp">frp</a>.</p>
-<p><em>Faithfully yours, frp.</em></p>
+<div class="container">
+<div class="header">
+<img src="https://img.ltyears.com/editor/23904/20241227/0d0d374e13bb5ea22e17e73a6c49f5e5.svg?t=1735314090679" alt="ME Frp Logo">
+<h1>镜缘映射 · ME Frp</h1>
+</div>
+<div class="content">
+<h2>404 - 页面未找到</h2>
+<p>抱歉，您访问的页面不存在。</p>
+<p>请检查您输入的网址是否正确，或返回首页。</p>
+</div>
+<div class="footer">
+<p>此页面由系统自动生成</p>
+<p>&copy; ME Frp 项目组 2021-2025.</p>
+<p>Frp 内网穿透联盟统一识别编码：AZWB66WB</p>
+</div>
+</div>
 </body>
 </html>
 `
@@ -58,7 +73,7 @@ func getNotFoundPageContent() []byte {
 	if NotFoundPagePath != "" {
 		buf, err = os.ReadFile(NotFoundPagePath)
 		if err != nil {
-			log.Warnf("read custom 404 page error: %v", err)
+			log.Warnf("读取自定义 404 页面错误: %v", err)
 			buf = []byte(NotFound)
 		}
 	} else {

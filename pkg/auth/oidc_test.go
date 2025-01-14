@@ -29,7 +29,7 @@ func TestPingWithEmptySubjectFromLoginFails(t *testing.T) {
 		Timestamp:    time.Now().UnixMilli(),
 	})
 	r.Error(err)
-	r.Contains(err.Error(), "received different OIDC subject in login and ping")
+	r.Contains(err.Error(), "登录和心跳包中收到了不同的 OIDC Subject")
 }
 
 func TestPingAfterLoginWithNewSubjectSucceeds(t *testing.T) {
@@ -60,5 +60,5 @@ func TestPingAfterLoginWithDifferentSubjectFails(t *testing.T) {
 		Timestamp:    time.Now().UnixMilli(),
 	})
 	r.Error(err)
-	r.Contains(err.Error(), "received different OIDC subject in login and ping")
+	r.Contains(err.Error(), "登录和心跳包中收到了不同的 OIDC Subject")
 }

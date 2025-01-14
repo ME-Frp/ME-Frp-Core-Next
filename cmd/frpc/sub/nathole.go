@@ -40,12 +40,12 @@ func init() {
 
 var natholeCmd = &cobra.Command{
 	Use:   "nathole",
-	Short: "Actions about nathole",
+	Short: "NAT 有关操作",
 }
 
 var natholeDiscoveryCmd = &cobra.Command{
 	Use:   "discover",
-	Short: "Discover nathole information from stun server",
+	Short: "从 STUN 服务器获取 NAT 信息",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// ignore error here, because we can use command line pameters
 		cfg, _, _, _, err := config.LoadClientConfig(cfgFile, strictConfigMode)
@@ -64,11 +64,11 @@ var natholeDiscoveryCmd = &cobra.Command{
 
 		addrs, localAddr, err := nathole.Discover([]string{cfg.NatHoleSTUNServer}, natHoleLocalAddr)
 		if err != nil {
-			fmt.Println("discover error:", err)
+			fmt.Println("发现错误:", err)
 			os.Exit(1)
 		}
 		if len(addrs) < 2 {
-			fmt.Printf("discover error: can not get enough addresses, need 2, got: %v\n", addrs)
+			fmt.Printf("发现错误: 无法获取足够的地址, 需要 2, 实际获取: %v\n", addrs)
 			os.Exit(1)
 		}
 
@@ -76,22 +76,22 @@ var natholeDiscoveryCmd = &cobra.Command{
 
 		natFeature, err := nathole.ClassifyNATFeature(addrs, localIPs)
 		if err != nil {
-			fmt.Println("classify nat feature error:", err)
+			fmt.Println("分类 NAT 特征错误:", err)
 			os.Exit(1)
 		}
-		fmt.Println("STUN server:", cfg.NatHoleSTUNServer)
-		fmt.Println("Your NAT type is:", natFeature.NatType)
-		fmt.Println("Behavior is:", natFeature.Behavior)
-		fmt.Println("External address is:", addrs)
-		fmt.Println("Local address is:", localAddr.String())
-		fmt.Println("Public Network:", natFeature.PublicNetwork)
+		fmt.Println("STUN 服务器:", cfg.NatHoleSTUNServer)
+		fmt.Println("您的 NAT 类型是:", natFeature.NatType)
+		fmt.Println("行为是:", natFeature.Behavior)
+		fmt.Println("外部地址是:", addrs)
+		fmt.Println("本地地址是:", localAddr.String())
+		fmt.Println("公共网络:", natFeature.PublicNetwork)
 		return nil
 	},
 }
 
 func validateForNatHoleDiscovery(cfg *v1.ClientCommonConfig) error {
 	if cfg.NatHoleSTUNServer == "" {
-		return fmt.Errorf("nat_hole_stun_server can not be empty")
+		return fmt.Errorf("nat_hole_stun_server 不能为空")
 	}
 	return nil
 }

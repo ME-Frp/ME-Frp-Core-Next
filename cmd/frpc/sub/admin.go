@@ -60,7 +60,7 @@ func NewAdminCommand(name, short string, handler func(*v1.ClientCommonConfig) er
 				os.Exit(1)
 			}
 			if cfg.WebServer.Port <= 0 {
-				fmt.Println("web server port should be set if you want to use this feature")
+				fmt.Println("如果需要使用此功能，请设置 WebServer 端口")
 				os.Exit(1)
 			}
 
@@ -80,7 +80,7 @@ func ReloadHandler(clientCfg *v1.ClientCommonConfig) error {
 	if err := client.Reload(ctx, strictConfigMode); err != nil {
 		return err
 	}
-	fmt.Println("reload success")
+	fmt.Println("重载成功")
 	return nil
 }
 
@@ -94,7 +94,7 @@ func StatusHandler(clientCfg *v1.ClientCommonConfig) error {
 		return err
 	}
 
-	fmt.Printf("Proxy Status...\n\n")
+	fmt.Printf("ME Frp 隧道状态...\n\n")
 	for _, typ := range proxyTypes {
 		arrs := res[string(typ)]
 		if len(arrs) == 0 {
@@ -120,6 +120,6 @@ func StopHandler(clientCfg *v1.ClientCommonConfig) error {
 	if err := client.Stop(ctx); err != nil {
 		return err
 	}
-	fmt.Println("stop success")
+	fmt.Println("关闭成功")
 	return nil
 }
