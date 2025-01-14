@@ -1,0 +1,14 @@
+@use './global.scss' as *;
+
+.long-span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: $text-color;
+} 

@@ -1,78 +1,86 @@
 <template>
-  <el-form
-    label-position="left"
-    label-width="auto"
-    inline
-    class="proxy-table-expand"
-  >
-    <el-form-item label="Name">
-      <span>{{ row.name }}</span>
-    </el-form-item>
-    <el-form-item label="Type">
-      <span>{{ row.type }}</span>
-    </el-form-item>
-    <el-form-item label="Encryption">
-      <span>{{ row.encryption }}</span>
-    </el-form-item>
-    <el-form-item label="Compression">
-      <span>{{ row.compression }}</span>
-    </el-form-item>
-    <el-form-item label="Last Start">
-      <span>{{ row.lastStartTime }}</span>
-    </el-form-item>
-    <el-form-item label="Last Close">
-      <span>{{ row.lastCloseTime }}</span>
-    </el-form-item>
+  <div>
+    <n-grid :cols="2" :x-gap="12">
+      <n-grid-item>
+        <n-descriptions label-placement="left" :column="1">
+          <n-descriptions-item label="隧道名称">
+            {{ row.name }}
+          </n-descriptions-item>
+          <n-descriptions-item label="隧道类型">
+            {{ row.type }}
+          </n-descriptions-item>
+          <n-descriptions-item label="加密">
+            {{ row.encryption }}
+          </n-descriptions-item>
+          <n-descriptions-item label="压缩">
+            {{ row.compression }}
+          </n-descriptions-item>
+          <n-descriptions-item label="最后启动时间">
+            {{ row.lastStartTime }}
+          </n-descriptions-item>
+          <n-descriptions-item label="最后关闭时间">
+            {{ row.lastCloseTime }}
+          </n-descriptions-item>
+        </n-descriptions>
+      </n-grid-item>
 
-    <div v-if="proxyType === 'http' || proxyType === 'https'">
-      <el-form-item label="Domains">
-        <span>{{ row.customDomains }}</span>
-      </el-form-item>
-      <el-form-item label="SubDomain">
-        <span>{{ row.subdomain }}</span>
-      </el-form-item>
-      <el-form-item label="locations">
-        <span>{{ row.locations }}</span>
-      </el-form-item>
-      <el-form-item label="HostRewrite">
-        <span>{{ row.hostHeaderRewrite }}</span>
-      </el-form-item>
-    </div>
-    <div v-else-if="proxyType === 'tcpmux'">
-      <el-form-item label="Multiplexer">
-        <span>{{ row.multiplexer }}</span>
-      </el-form-item>
-      <el-form-item label="RouteByHTTPUser">
-        <span>{{ row.routeByHTTPUser }}</span>
-      </el-form-item>
-      <el-form-item label="Domains">
-        <span>{{ row.customDomains }}</span>
-      </el-form-item>
-      <el-form-item label="SubDomain">
-        <span>{{ row.subdomain }}</span>
-      </el-form-item>
-    </div>
-    <div v-else>
-      <el-form-item label="Addr">
-        <span>{{ row.addr }}</span>
-      </el-form-item>
-    </div>
-  </el-form>
+      <n-grid-item>
+        <n-descriptions label-placement="left" :column="1">
+          <template v-if="proxyType === 'http' || proxyType === 'https'">
+            <n-descriptions-item label="域名">
+              {{ row.customDomains }}
+            </n-descriptions-item>
+            <n-descriptions-item label="子域名">
+              {{ row.subdomain }}
+            </n-descriptions-item>
+            <n-descriptions-item label="路径">
+              {{ row.locations }}
+            </n-descriptions-item>
+            <n-descriptions-item label="主机重写">
+              {{ row.hostHeaderRewrite }}
+            </n-descriptions-item>
+          </template>
 
-  <div v-if="row.annotations && row.annotations.size > 0">
-  <el-divider />
-  <el-text class="title-text" size="large">Annotations</el-text>
-  <ul>
-    <li v-for="item in annotationsArray()">
-      <span class="annotation-key">{{ item.key }}</span>
-      <span>{{  item.value }}</span>
-    </li>
-  </ul>
+          <template v-else-if="proxyType === 'tcpmux'">
+            <n-descriptions-item label="复用器">
+              {{ row.multiplexer }}
+            </n-descriptions-item>
+            <n-descriptions-item label="HTTP用户路由">
+              {{ row.routeByHTTPUser }}
+            </n-descriptions-item>
+            <n-descriptions-item label="域名">
+              {{ row.customDomains }}
+            </n-descriptions-item>
+            <n-descriptions-item label="子域名">
+              {{ row.subdomain }}
+            </n-descriptions-item>
+          </template>
+
+          <template v-else>
+            <n-descriptions-item label="地址">
+              {{ row.addr }}
+            </n-descriptions-item>
+          </template>
+        </n-descriptions>
+      </n-grid-item>
+    </n-grid>
+
+    <template v-if="row.annotations && row.annotations.size > 0">
+      <n-divider />
+      <n-text depth="3" style="font-size: 16px">注解</n-text>
+      <n-list>
+        <n-list-item v-for="item in annotationsArray()" :key="item.key">
+          <n-space justify="space-between" style="width: 100%">
+            <n-text class="annotation-key">{{ item.key }}</n-text>
+            <n-text>{{ item.value }}</n-text>
+          </n-space>
+        </n-list-item>
+      </n-list>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-
 const props = defineProps<{
   row: any
   proxyType: string
@@ -80,34 +88,16 @@ const props = defineProps<{
 
 // annotationsArray returns an array of key-value pairs from the annotations map.
 const annotationsArray = (): Array<{ key: string; value: string }> => {
-  const array: Array<{ key: string; value: any }> = [];
+  const array: Array<{ key: string; value: any }> = []
   if (props.row.annotations) {
     props.row.annotations.forEach((value: any, key: string) => {
-      array.push({ key, value });
-    });
+      array.push({ key, value })
+    })
   }
-  return array;
+  return array
 }
 </script>
 
-<style>
-ul {
-  list-style-type: none;
-  padding: 5px;
-}
-
-ul li {
-  justify-content: space-between;
-  padding: 5px;
-}
-
-ul .annotation-key {
-  width: 300px;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.title-text {
-  color: #99a9bf;
-}
+<style lang="scss" scoped>
+@use '../assets/styles/proxy-view-expand.scss';
 </style>

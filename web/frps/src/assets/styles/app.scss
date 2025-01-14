@@ -1,0 +1,77 @@
+@use './global.scss' as *;
+
+.layout {
+  height: 100vh;
+}
+
+.header {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  background: $bg-color;
+  border-bottom: 1px solid $border-color;
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-trigger {
+  padding: 4px;
+  transition: $transition-all;
+  
+  &:hover {
+    background: $bg-color-hover;
+  }
+}
+
+.mobile-menu {
+  min-width: 200px;
+  padding: 4px;
+  background-color: $bg-color;
+  box-shadow: $box-shadow;
+}
+
+:deep(.n-popover) {
+  padding: 0;
+  background-color: $bg-color !important;
+}
+
+:deep(.n-popover-content) {
+  padding: 0;
+  background-color: $bg-color;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .n-layout-content {
+    left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+} 

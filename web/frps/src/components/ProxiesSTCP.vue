@@ -1,5 +1,9 @@
 <template>
-  <ProxyView :proxies="proxies" proxyType="stcp" @refresh="fetchData"/>
+  <n-card>
+    <n-message-provider>
+      <ProxyView :proxies="proxies" proxyType="stcp" @refresh="fetchData"/>
+    </n-message-provider>
+  </n-card>
 </template>
 
 <script setup lang="ts">

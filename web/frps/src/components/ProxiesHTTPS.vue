@@ -1,5 +1,9 @@
 <template>
-  <ProxyView :proxies="proxies" proxyType="https" @refresh="fetchData"/>
+  <n-card>
+    <n-message-provider>
+      <ProxyView :proxies="proxies" proxyType="https" @refresh="fetchData"/>
+    </n-message-provider>
+  </n-card>
 </template>
 
 <script setup lang="ts">

@@ -1,42 +1,30 @@
 <template>
-  <ProxyView :proxies="proxies" proxyType="http" @refresh="fetchData"/>
+  <n-card class="proxy-card">
+    <ProxyView
+      :proxies="proxies"
+      proxy-type="http"
+      @refresh="fetchData"
+    />
+  </n-card>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { HTTPProxy } from '../utils/proxy.js'
-import ProxyView from './ProxyView.vue'
+import type { BaseProxy } from '../utils/proxy'
 
-let proxies = ref<HTTPProxy[]>([])
+const proxies = ref<BaseProxy[]>([])
 
 const fetchData = () => {
-  let vhostHTTPPort: number
-  let subdomainHost: string
-  fetch('../api/serverinfo', { credentials: 'include' })
-    .then((res) => {
-      return res.json()
-    })
+  fetch('../api/proxies/http', { credentials: 'include' })
+    .then((res) => res.json())
     .then((json) => {
-      vhostHTTPPort = json.vhostHTTPPort
-      subdomainHost = json.subdomainHost
-      if (vhostHTTPPort == null || vhostHTTPPort == 0) {
-        return
-      }
-      fetch('../api/proxy/http', { credentials: 'include' })
-        .then((res) => {
-          return res.json()
-        })
-        .then((json) => {
-          proxies.value = []
-          for (let proxyStats of json.proxies) {
-            proxies.value.push(
-              new HTTPProxy(proxyStats, vhostHTTPPort, subdomainHost)
-            )
-          }
-        })
+      proxies.value = json.proxies
     })
 }
+
 fetchData()
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+@use '../assets/styles/proxy-type.scss';
+</style>

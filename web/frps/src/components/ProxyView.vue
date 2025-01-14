@@ -1,114 +1,160 @@
 <template>
   <div>
-    <el-page-header
-      :icon="null"
-      style="width: 100%; margin-left: 30px; margin-bottom: 20px"
-    >
-      <template #title>
-        <span>{{ proxyType }}</span>
-      </template>
-      <template #content> </template>
-      <template #extra>
-        <div class="flex items-center" style="margin-right: 30px">
-          <el-popconfirm
-            title="Are you sure to clear all data of offline proxies?"
-            @confirm="clearOfflineProxies"
-          >
-            <template #reference>
-              <el-button>ClearOfflineProxies</el-button>
-            </template>
-          </el-popconfirm>
-          <el-button @click="$emit('refresh')">Refresh</el-button>
-        </div>
-      </template>
-    </el-page-header>
+    <div class="proxy-header">
+      <n-text class="title">
+        {{ proxyType.toUpperCase() }} 隧道
+      </n-text>
+      <n-space>
+        <n-popconfirm positive-text="确认" negative-text="取消" @positive-click="clearOfflineProxies">
+          <template #trigger>
+            <n-button>
+              <template #icon>
+                <n-icon><trash-outline /></n-icon>
+              </template>
+              清理离线隧道
+            </n-button>
+          </template>
+          确定要清理所有离线隧道吗？
+        </n-popconfirm>
+        <n-button @click="$emit('refresh')">
+          <template #icon>
+            <n-icon><refresh-outline /></n-icon>
+          </template>
+          刷新
+        </n-button>
+      </n-space>
+    </div>
 
-    <el-table
-      :data="proxies"
-      :default-sort="{ prop: 'name', order: 'ascending' }"
-      style="width: 100%"
-    >
-      <el-table-column type="expand">
-        <template #default="props">
-          <ProxyViewExpand :row="props.row" :proxyType="proxyType" />
-        </template>
-      </el-table-column>
-      <el-table-column label="Name" prop="name" sortable> </el-table-column>
-      <el-table-column label="Port" prop="port" sortable> </el-table-column>
-      <el-table-column label="Connections" prop="conns" sortable>
-      </el-table-column>
-      <el-table-column
-        label="Traffic In"
-        prop="trafficIn"
-        :formatter="formatTrafficIn"
-        sortable
-      >
-      </el-table-column>
-      <el-table-column
-        label="Traffic Out"
-        prop="trafficOut"
-        :formatter="formatTrafficOut"
-        sortable
-      >
-      </el-table-column>
-      <el-table-column label="ClientVersion" prop="clientVersion" sortable>
-      </el-table-column>
-      <el-table-column label="Status" prop="status" sortable>
-        <template #default="scope">
-          <el-tag v-if="scope.row.status === 'online'" type="success">{{
-            scope.row.status
-          }}</el-tag>
-          <el-tag v-else type="danger">{{ scope.row.status }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="Operations">
-        <template #default="scope">
-          <el-button
-            type="primary"
-            :name="scope.row.name"
-            style="margin-bottom: 10px"
-            @click="dialogVisibleName = scope.row.name; dialogVisible = true"
-            >Traffic
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <n-data-table :columns="columns" :data="proxies" :pagination="pagination" :row-key="(row: any) => row.name"
+      :max-height="null" size="small" class="proxy-table" />
+
+    <n-modal v-model:show="dialogVisible" :title="dialogVisibleName" preset="card" style="width: 700px">
+      <Traffic :proxyName="dialogVisibleName" />
+    </n-modal>
   </div>
-
-  <el-dialog
-    v-model="dialogVisible"
-    destroy-on-close="true"
-    :title="dialogVisibleName"
-    width="700px">
-    <Traffic :proxyName="dialogVisibleName" />
-  </el-dialog>
 </template>
 
 <script setup lang="ts">
+import { h, ref } from 'vue'
+import { NTag, NButton, NIcon, useMessage, type DataTableColumns } from 'naive-ui'
+import { 
+  RefreshOutline, 
+  TrashOutline,
+  StatsChartOutline,
+  CheckmarkCircleOutline,
+  CloseCircleOutline
+} from '@vicons/ionicons5'
 import * as Humanize from 'humanize-plus'
-import type { TableColumnCtx } from 'element-plus'
 import type { BaseProxy } from '../utils/proxy.js'
-import { ElMessage } from 'element-plus'
 import ProxyViewExpand from './ProxyViewExpand.vue'
-import { ref } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   proxies: BaseProxy[]
   proxyType: string
 }>()
 
 const emit = defineEmits(['refresh'])
+const message = useMessage()
 
 const dialogVisible = ref(false)
 const dialogVisibleName = ref("")
 
-const formatTrafficIn = (row: BaseProxy, _: TableColumnCtx<BaseProxy>) => {
-  return Humanize.fileSize(row.trafficIn)
+const pagination = {
+  pageSize: 10
 }
 
-const formatTrafficOut = (row: BaseProxy, _: TableColumnCtx<BaseProxy>) => {
-  return Humanize.fileSize(row.trafficOut)
-}
+const columns: DataTableColumns<BaseProxy> = [
+  {
+    type: 'expand',
+    expandable: () => true,
+    renderExpand: (row) => {
+      return h(ProxyViewExpand, {
+        row,
+        proxyType: props.proxyType
+      })
+    }
+  },
+  {
+    title: '名称',
+    key: 'name',
+    sorter: true
+  },
+  {
+    title: '端口',
+    key: 'port',
+    sorter: true
+  },
+  {
+    title: '连接数',
+    key: 'conns',
+    sorter: true
+  },
+  {
+    title: '流入流量',
+    key: 'trafficIn',
+    sorter: true,
+    render(row) {
+      return Humanize.fileSize(row.trafficIn)
+    }
+  },
+  {
+    title: '流出流量',
+    key: 'trafficOut',
+    sorter: true,
+    render(row) {
+      return Humanize.fileSize(row.trafficOut)
+    }
+  },
+  {
+    title: '客户端版本',
+    key: 'clientVersion',
+    sorter: true
+  },
+  {
+    title: '状态',
+    key: 'status',
+    sorter: true,
+    render(row) {
+      return h(
+        NTag,
+        {
+          type: row.status === 'online' ? 'success' : 'error',
+        },
+        {
+          default: () => [
+            h(NIcon, null, {
+              default: () => h(row.status === 'online' ? CheckmarkCircleOutline : CloseCircleOutline)
+            }),
+            ' ',
+            row.status === 'online' ? '在线' : '离线'
+          ]
+        }
+      )
+    }
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render(row) {
+      return h(
+        NButton,
+        {
+          type: 'primary',
+          onClick: () => {
+            dialogVisibleName.value = row.name
+            dialogVisible.value = true
+          }
+        },
+        {
+          default: () => [
+            h(NIcon, null, { default: () => h(StatsChartOutline) }),
+            ' 流量'
+          ]
+        }
+      )
+    }
+  }
+]
 
 const clearOfflineProxies = () => {
   fetch('../api/proxies?status=offline', {
@@ -117,29 +163,18 @@ const clearOfflineProxies = () => {
   })
     .then((res) => {
       if (res.ok) {
-        ElMessage({
-          message: 'Successfully cleared offline proxies',
-          type: 'success',
-        })
+        message.success('成功清理离线隧道')
         emit('refresh')
       } else {
-        ElMessage({
-          message: 'Failed to clear offline proxies: ' + res.status + ' ' + res.statusText,
-          type: 'warning',
-        })
+        message.warning('清理离线隧道失败: ' + res.status + ' ' + res.statusText)
       }
     })
     .catch((err) => {
-      ElMessage({
-        message: 'Failed to clear offline proxies: ' + err.message,
-        type: 'warning',
-      })
+      message.error('清理离线隧道失败: ' + err.message)
     })
 }
 </script>
 
-<style>
-.el-page-header__title {
-  font-size: 20px;
-}
+<style lang="scss" scoped>
+@use '../assets/styles/proxy-view.scss';
 </style>

@@ -1,0 +1,115 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+#app {
+    height: 100%;
+}
+
+// 主色调
+$primary-color: #2196F3;
+$primary-hover: #42A5F5;
+$primary-pressed: #1976D2;
+$primary-suppl: #90CAF9;
+
+// 渐变
+$primary-gradient: linear-gradient(45deg, $primary-color, $primary-hover);
+
+// 文本颜色
+$text-color: var(--n-text-color);
+$text-color-2: var(--n-text-color-2);
+$text-color-3: var(--n-text-color-3);
+
+// 背景色
+$bg-color: var(--n-color);
+$bg-color-hover: var(--n-color-hover);
+$bg-color-pressed: var(--n-color-pressed);
+$bg-color-modal: var(--n-modal-color);
+$bg-color-popup: var(--n-popup-color);
+
+// 边框
+$border-color: var(--n-border-color);
+$border-radius: var(--n-border-radius);
+$border-radius-small: 3px;
+
+// 阴影
+$box-shadow: var(--n-box-shadow);
+$box-shadow-hover: var(--n-box-shadow-hover);
+$box-shadow-pressed: var(--n-box-shadow-pressed);
+
+// 过渡
+$transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-quick: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+// 组件覆盖
+:root {
+  // 数据表格
+  --n-data-table-th-text-color: #{$text-color-2};
+  --n-data-table-td-text-color: #{$text-color};
+  --n-data-table-th-color: #{$bg-color};
+  --n-data-table-td-color: #{$bg-color};
+  --n-data-table-border-color: #{$border-color};
+  
+  // 按钮
+  --n-button-text-color: #{$text-color};
+  --n-button-color: #{$bg-color};
+  --n-button-border-color: #{$border-color};
+  --n-button-border: 1px solid #{$border-color};
+  
+  // 卡片
+  --n-card-color: #{$bg-color};
+  --n-card-border-color: #{$border-color};
+  --n-card-box-shadow: #{$box-shadow};
+  
+  // 弹出层
+  --n-popover-color: #{$bg-color-popup};
+  --n-modal-color: #{$bg-color-modal};
+  
+  // 描述列表
+  --n-descriptions-border-color: #{$border-color};
+  --n-descriptions-th-text-color: #{$text-color-2};
+  --n-descriptions-td-text-color: #{$text-color};
+  
+  // 标签
+  --n-tag-color: #{$bg-color};
+  --n-tag-border-color: #{$border-color};
+  
+  // 菜单
+  --n-menu-item-text-color: #{$text-color};
+  --n-menu-item-color-hover: #{$bg-color-hover};
+  --n-menu-item-color-active: #{$primary-color};
+
+  // Switch 开关
+  --n-switch-rail-color: #{$bg-color};
+  --n-switch-rail-color-active: #{$primary-color};
+  --n-switch-rail-border: 1px solid #{$border-color};
+  --n-switch-rail-border-active: 1px solid #{$primary-color};
+  --n-switch-rail-box-shadow: none;
+  --n-switch-rail-box-shadow-active: 0 0 0 2px #{$primary-suppl};
+  --n-switch-rail-box-shadow-focus: 0 0 0 2px #{$primary-suppl};
+  --n-switch-rail-box-shadow-hover: none;
+  --n-switch-rail-box-shadow-pressed: none;
+  --n-switch-rail-box-shadow-active-pressed: none;
+  --n-switch-rail-box-shadow-active-hover: none;
+  --n-switch-rail-box-shadow-active-focus: 0 0 0 2px #{$primary-suppl};
+}
+
+// 暗色主题覆盖
+.n-config-provider.n-theme-dark {
+  --n-color: #18181c;
+  --n-color-hover: #242429;
+  --n-color-pressed: #2b2b30;
+  --n-text-color: rgba(255, 255, 255, 0.9);
+  --n-text-color-2: rgba(255, 255, 255, 0.7);
+  --n-text-color-3: rgba(255, 255, 255, 0.5);
+  --n-border-color: #333;
+
+  // Switch 开关
+  --n-switch-rail-color: #333;
+  --n-switch-rail-color-active: #{$primary-color};
+}

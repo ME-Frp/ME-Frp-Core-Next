@@ -1,0 +1,59 @@
+@use './global.scss' as *;
+
+.proxy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: $text-color;
+}
+
+:deep(.n-data-table) {
+  --n-merged-th-color: #{$bg-color};
+  --n-merged-td-color: #{$bg-color};
+}
+
+:deep(.n-data-table-th) {
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: $text-color-2 !important;
+  background-color: $bg-color !important;
+  border-bottom: 1px solid $border-color !important;
+}
+
+:deep(.n-data-table-td) {
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  color: $text-color !important;
+  background-color: $bg-color !important;
+  border-bottom: 1px solid $border-color !important;
+}
+
+:deep(.n-data-table-tr) {
+  height: auto !important;
+}
+
+:deep(.n-data-table-expand-trigger) {
+  margin-right: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+:deep(.n-tag) {
+  padding: 0 8px !important;
+}
+
+:deep(.n-button) {
+  padding: 0 12px !important;
+}
+
+:deep(.n-data-table-expanded) {
+  padding: 12px !important;
+  background-color: var(--n-merged-td-color) !important;
+} 

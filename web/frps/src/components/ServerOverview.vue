@@ -1,86 +1,69 @@
 <template>
-  <div>
-    <el-row>
-      <el-col :md="12">
-        <div class="source">
-          <el-form
-            label-position="left"
-            label-width="220px"
-            class="server_info"
-          >
-            <el-form-item label="Version">
-              <span>{{ data.version }}</span>
-            </el-form-item>
-            <el-form-item label="BindPort">
-              <span>{{ data.bindPort }}</span>
-            </el-form-item>
-            <el-form-item label="KCP Bind Port" v-if="data.kcpBindPort != 0">
-              <span>{{ data.kcpBindPort }}</span>
-            </el-form-item>
-            <el-form-item label="QUIC Bind Port" v-if="data.quicBindPort != 0">
-              <span>{{ data.quicBindPort }}</span>
-            </el-form-item>
-            <el-form-item label="HTTP Port" v-if="data.vhostHTTPPort != 0">
-              <span>{{ data.vhostHTTPPort }}</span>
-            </el-form-item>
-            <el-form-item label="HTTPS Port" v-if="data.vhostHTTPSPort != 0">
-              <span>{{ data.vhostHTTPSPort }}</span>
-            </el-form-item>
-            <el-form-item
-              label="TCPMux HTTPConnect Port"
-              v-if="data.tcpmuxHTTPConnectPort != 0"
-            >
-              <span>{{ data.tcpmuxHTTPConnectPort }}</span>
-            </el-form-item>
-            <el-form-item
-              label="Subdomain Host"
-              v-if="data.subdomainHost != ''"
-            >
-              <LongSpan :content="data.subdomainHost" :length="30"></LongSpan>
-            </el-form-item>
-            <el-form-item label="Max PoolCount">
-              <span>{{ data.maxPoolCount }}</span>
-            </el-form-item>
-            <el-form-item label="Max Ports Per Client">
-              <span>{{ data.maxPortsPerClient }}</span>
-            </el-form-item>
-            <el-form-item label="Allow Ports" v-if="data.allowPortsStr != ''">
-              <LongSpan :content="data.allowPortsStr" :length="30"></LongSpan>
-            </el-form-item>
-            <el-form-item label="TLS Force" v-if="data.tlsForce === true">
-              <span>{{ data.tlsForce }}</span>
-            </el-form-item>
-            <el-form-item label="HeartBeat Timeout">
-              <span>{{ data.heartbeatTimeout }}</span>
-            </el-form-item>
-            <el-form-item label="Client Counts">
-              <span>{{ data.clientCounts }}</span>
-            </el-form-item>
-            <el-form-item label="Current Connections">
-              <span>{{ data.curConns }}</span>
-            </el-form-item>
-            <el-form-item label="Proxy Counts">
-              <span>{{ data.proxyCounts }}</span>
-            </el-form-item>
-          </el-form>
-        </div>
-      </el-col>
-      <el-col :md="12">
-        <div
-          id="traffic"
-          style="width: 400px; height: 250px; margin-bottom: 30px"
-        ></div>
-        <div id="proxies" style="width: 400px; height: 250px"></div>
-      </el-col>
-    </el-row>
+  <div class="overview-container">
+    <!-- 左侧信息栏 -->
+    <div class="info-section">
+      <n-descriptions :column="1" label-placement="left">
+        <n-descriptions-item label="版本">
+          {{ data.version }}
+        </n-descriptions-item>
+        <n-descriptions-item label="绑定端口">
+          {{ data.bindPort }}
+        </n-descriptions-item>
+        <n-descriptions-item v-if="data.kcpBindPort != 0" label="KCP绑定端口">
+          {{ data.kcpBindPort }}
+        </n-descriptions-item>
+        <n-descriptions-item label="最大连接池">
+          {{ data.maxPoolCount }}
+        </n-descriptions-item>
+        <n-descriptions-item label="每客户端最大端口数">
+          {{ data.maxPortsPerClient }}
+        </n-descriptions-item>
+        <n-descriptions-item v-if="data.allowPortsStr != ''" label="允许端口">
+          <LongSpan :content="data.allowPortsStr" :length="30" />
+        </n-descriptions-item>
+        <n-descriptions-item label="心跳超时">
+          {{ data.heartbeatTimeout }}
+        </n-descriptions-item>
+        <n-descriptions-item label="客户端数量">
+          {{ data.clientCounts }}
+        </n-descriptions-item>
+        <n-descriptions-item label="当前连接数">
+          {{ data.curConns }}
+        </n-descriptions-item>
+        <n-descriptions-item label="隧道数量">
+          {{ data.proxyCounts }}
+        </n-descriptions-item>
+      </n-descriptions>
+    </div>
+
+    <!-- 右侧图表区域 -->
+    <div class="charts-section">
+      <div class="chart-container">
+        <div class="chart-title">流量统计</div>
+        <div class="chart-subtitle">今日</div>
+        <div ref="trafficRef" class="chart" />
+      </div>
+      <div class="chart-container">
+        <div class="chart-title">隧道统计</div>
+        <div class="chart-subtitle">当前</div>
+        <div ref="proxiesRef" class="chart" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useMessage } from 'naive-ui'
+import * as echarts from 'echarts'
 import { DrawTrafficChart, DrawProxyChart } from '../utils/chart'
 import LongSpan from './LongSpan.vue'
+
+const message = useMessage()
+const trafficRef = ref<HTMLElement>()
+const proxiesRef = ref<HTMLElement>()
+let trafficChart: echarts.ECharts | null = null
+let proxiesChart: echarts.ECharts | null = null
 
 let data = ref({
   version: '',
@@ -101,6 +84,23 @@ let data = ref({
   proxyCounts: 0,
 })
 
+const initCharts = () => {
+  if (trafficRef.value && proxiesRef.value) {
+    // 销毁旧的图表实例
+    trafficChart?.dispose()
+    proxiesChart?.dispose()
+    
+    // 创建新的图表实例
+    trafficChart = echarts.init(trafficRef.value)
+    proxiesChart = echarts.init(proxiesRef.value)
+  }
+}
+
+const handleResize = () => {
+  trafficChart?.resize()
+  proxiesChart?.resize()
+}
+
 const fetchData = () => {
   fetch('../api/serverinfo', { credentials: 'include' })
     .then((res) => res.json())
@@ -116,7 +116,7 @@ const fetchData = () => {
       data.value.maxPoolCount = json.maxPoolCount
       data.value.maxPortsPerClient = json.maxPortsPerClient
       if (data.value.maxPortsPerClient == '0') {
-        data.value.maxPortsPerClient = 'no limit'
+        data.value.maxPortsPerClient = '无限制'
       }
       data.value.allowPortsStr = json.allowPortsStr
       data.value.tlsForce = json.tlsForce
@@ -148,48 +148,35 @@ const fetchData = () => {
         }
       }
 
-      // draw chart
-      DrawTrafficChart('traffic', json.totalTrafficIn, json.totalTrafficOut)
-      DrawProxyChart('proxies', json)
+      // 更新图表
+      if (trafficRef.value && proxiesRef.value) {
+        if (!trafficChart || !proxiesChart) {
+          initCharts()
+        }
+        DrawTrafficChart(trafficChart!, json.totalTrafficIn, json.totalTrafficOut)
+        DrawProxyChart(proxiesChart!, json)
+      }
     })
     .catch(() => {
-      ElMessage({
-        showClose: true,
-        message: 'Get server info from frps failed!',
-        type: 'warning',
-      })
+      message.warning('从 Frp 服务端获取服务器信息失败！')
     })
 }
-fetchData()
+
+onMounted(() => {
+  initCharts() // 初始化图表
+  fetchData()   // 获取数据
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+  trafficChart?.dispose()
+  proxiesChart?.dispose()
+  trafficChart = null
+  proxiesChart = null
+})
 </script>
 
-<style>
-.source {
-  border-radius: 4px;
-  transition: 0.2s;
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
-.server_info {
-  margin-left: 40px;
-  font-size: 0px;
-}
-
-.server_info .el-form-item__label {
-  color: #99a9bf;
-  height: 40px;
-  line-height: 40px;
-}
-
-.server_info .el-form-item__content {
-  height: 40px;
-  line-height: 40px;
-}
-
-.server_info .el-form-item {
-  margin-right: 0;
-  margin-bottom: 0;
-  width: 100%;
-}
+<style lang="scss" scoped>
+@use '../assets/styles/server-overview.scss';
 </style>

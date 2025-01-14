@@ -1,0 +1,73 @@
+@use './global.scss' as *;
+
+.overview-container {
+  display: flex;
+  gap: 24px;
+  height: 100%;
+}
+
+.info-section {
+  flex: 0 0 300px;
+  padding: 16px;
+  background: $bg-color;
+  border-radius: 3px;
+  box-shadow: $box-shadow;
+}
+
+.charts-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chart-container {
+  flex: 1;
+  background: $bg-color;
+  padding: 16px;
+  border-radius: 3px;
+  box-shadow: $box-shadow;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: $text-color-2;
+  margin-bottom: 4px;
+}
+
+.chart-subtitle {
+  font-size: 12px;
+  color: $text-color-2;
+  margin-bottom: 16px;
+}
+
+.chart {
+  flex: 1;
+  width: 100%;
+}
+
+:deep(.n-descriptions .n-descriptions-item__label) {
+  width: 120px;
+  text-align: left;
+  color: var(--n-text-color-2);
+}
+
+:deep(.n-descriptions .n-descriptions-item__content) {
+  color: var(--n-text-color);
+}
+
+@media (max-width: 1024px) {
+  .overview-container {
+    flex-direction: column;
+  }
+
+  .info-section {
+    flex: none;
+    width: 100%;
+  }
+
+  .charts-section {
+    width: 100%;
+  }
+} 
