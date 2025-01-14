@@ -29,46 +29,78 @@ var NotFoundPagePath = ""
 
 const (
 	NotFound = `<!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>503 Service Unavailable | ME Frp</title>
-<style>
-body{font-family:Arial,sans-serif;background-color:#f4f4f4;margin:0;line-height:1.6;padding:0}
-.container{width:100%;max-width:600px;margin:0 auto;background-color:#fff;padding:20px;box-shadow:0 0 10px rgba(0,0,0,.1);font-size:16px}
-.header{text-align:center;padding:10px 0;display:flex;align-items:center;justify-content:center}
-.header h2{margin:0;font-size:30px}
-.content{margin:20px 0}
-.footer{text-align:center;color:#888;font-size:12px;margin-top:20px}
-</style>
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+<title>服务不可用 | ME Frp</title>
+<pnk rel="icon" href="https://mefrp-preview.lxhtt.cn/assets/img/logo.svg" />
 </head>
 <body>
 <div class="container">
-<div class="header">
-<h2>镜缘映射 · ME Frp</h2>
-</div>
-<div class="content">
-<h3>503 - 服务不可用</h3>
+<h1>⚠ 503 - 服务不可用</h1>
 <p>如果您是隧道所有者，造成无法访问的原因可能有：</p>
-<li>您访问的网站使用了内网穿透，但是对应的客户端没有运行。</li>
-<li>该网站或隧道已被管理员临时或永久禁止连接。</li>
-<li>域名解析更改还未生效或解析错误，请检查设置是否正确。</li>
-<li>隧道使用的必须为HTTP或HTTPS类型的隧道</li>
+<ul>
+<p>您访问的网站使用了镜缘映射，但客户端不在线。</p>
+<p>该网站或隧道已被管理员封禁。</p>
+<p>域名解析 未生效 或 解析错误。</p>
+</ul></br>
 <p>如果您是普通访问者，您可以：</p>
-<li>稍等一段时间后再次尝试访问此站点。</li>
-<li>尝试与该网站的所有者取得联系。</li>
-<li>刷新您的 DNS 缓存或在其他网络环境访问。</li>
-</div>
-<div class="footer">
-<p>此页面由 ME Frp 服务端自动生成</p>
-<p>&copy; ME Frp 项目组 2021-2025.</p>
-<p>Frp 内网穿透联盟统一识别编码：AZWB66WB</p>
-</div>
+<ul>
+<p>稍等一段时间后再次尝试访问此站点。</p>
+<p>尝试与该网站的所有者取得联系。</p>
+<p>刷新您的 DNS 缓存或在其他网络环境访问。</p>
+</ul>
+<p class="powered-by">&copy; <a target="_blank" href="https://www.mefrp.com/">ME Frp</a> 项目组 2021-2025. </br>Frp 内网穿透联盟统一识别编码：<a target="_blank" href="https://内网穿透.中国/">AZWB66WB</a></p>
 </div>
 </body>
-</html>
-`
+<style>
+* {
+margin: 0;
+padding: 0;
+font-family: 'Microsoft YaHei', Arial, sans-serif;
+}
+.container {
+height: 100vh;
+display: flex;
+justify-content: center;
+flex-direction: column;
+align-items: left;
+padding-left: 10%;
+}
+.container h1 {
+font-weight: 400;
+margin-bottom: 1rem;
+}
+.container p {
+color: gray;
+}
+.container ul {
+margin-top: 1rem;
+}
+.container .powered-by {
+margin-top: 2rem;
+}
+.container .powered-by a {
+color: rgb(21, 129, 218);
+text-decoration: none;
+transition: 0.3s;
+}
+.container .powered-by a:hover {
+color: rgb(24, 144, 243);
+}
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+html {
+background-color: rgb(41, 41, 41);
+}
+.container h1 {
+color: white;
+}
+}
+</style>
+</html>`
 )
 
 func getNotFoundPageContent() []byte {
