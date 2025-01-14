@@ -40,7 +40,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "ME Frp 配置文件")
 	rootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "v", false, "ME Frp 核心版本")
-	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "严格配置解析模式，未知字段将导致错误")
+	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "严格配置解析模式, 未知字段将导致错误")
 
 	config.RegisterServerConfigFlags(rootCmd, &serverCfg)
 }
@@ -66,7 +66,7 @@ var rootCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			if isLegacyFormat {
-				fmt.Printf("警告: INI 格式已弃用，将在未来版本中移除，请使用 Yaml/JSON/Toml 格式!\n")
+				fmt.Printf("警告: INI 格式已弃用, 将在未来版本中移除, 请使用 Yaml/JSON/Toml 格式!\n")
 			}
 		} else {
 			serverCfg.Complete()

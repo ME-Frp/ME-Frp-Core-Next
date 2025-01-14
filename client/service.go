@@ -183,7 +183,7 @@ func (svr *Service) Run(ctx context.Context) error {
 	if svr.ctl == nil {
 		cancelCause := cancelErr{}
 		_ = errors.As(context.Cause(svr.ctx), &cancelCause)
-		return fmt.Errorf("登录节点失败: %v. 启用 loginFailExit 后，将不再尝试重试", cancelCause.Err)
+		return fmt.Errorf("登录节点失败: %v. 启用 loginFailExit 后, 将不再尝试重试", cancelCause.Err)
 	}
 
 	go svr.keepControllerWorking()
@@ -206,7 +206,7 @@ func (svr *Service) keepControllerWorking() {
 		svr.loopLoginUntilSuccess(20*time.Second, false)
 		if svr.ctl != nil {
 			<-svr.ctl.Done()
-			return false, errors.New("控制连接已关闭，尝试另一个循环")
+			return false, errors.New("控制连接已关闭, 尝试另一个循环")
 		}
 		// If the control is nil, it means that the login failed and the service is also closed.
 		return false, nil
@@ -284,7 +284,7 @@ func (svr *Service) login() (conn net.Conn, connector Connector, err error) {
 	svr.runID = loginRespMsg.RunID
 	xl.AddPrefix(xlog.LogPrefix{Name: "runID", Value: svr.runID})
 
-	xl.Infof("登录节点成功，RunId: [%s]", loginRespMsg.RunID)
+	xl.Infof("登录节点成功, RunId: [%s]", loginRespMsg.RunID)
 	return
 }
 

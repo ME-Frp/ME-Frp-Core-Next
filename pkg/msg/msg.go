@@ -134,6 +134,7 @@ type NewProxy struct {
 
 type NewProxyResp struct {
 	ProxyName  string `json:"proxy_name,omitempty"`
+	ProxyType  string `json:"proxy_type,omitempty"`
 	RemoteAddr string `json:"remote_addr,omitempty"`
 	Error      string `json:"error,omitempty"`
 }

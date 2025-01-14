@@ -354,7 +354,7 @@ func (ctl *Control) worker() {
 	}
 
 	metrics.Server.CloseClient()
-	xl.Infof("客户端退出成功")
+	xl.Infof("客户端 [%s] 已成功断开连接", ctl.loginMsg.RunID)
 	close(ctl.doneCh)
 }
 
@@ -391,13 +391,17 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		ProxyName: inMsg.ProxyName,
 	}
 	if err != nil {
-		xl.Warnf("创建隧道 [%s] 类型 [%s] 失败: %v", inMsg.ProxyName, inMsg.ProxyType, err)
-		resp.Error = util.GenerateResponseErrorString(fmt.Sprintf("创建隧道 [%s] 失败", inMsg.ProxyName),
+		xl.Warnf("登记 [%s] 隧道 [%s] 失败: %v", inMsg.ProxyType, inMsg.ProxyName, err)
+		resp.Error = util.GenerateResponseErrorString(fmt.Sprintf("登记隧道 [%s] 失败", inMsg.ProxyName),
 			err, lo.FromPtr(ctl.serverCfg.DetailedErrorsToClient))
 	} else {
-		resp.RemoteAddr = remoteAddr
-		xl.Infof("创建隧道 [%s] 类型 [%s] 成功", inMsg.ProxyName, inMsg.ProxyType)
+		xl.Infof("登记 [%s] 隧道 [%s] 成功", inMsg.ProxyType, inMsg.ProxyName)
 		metrics.Server.NewProxy(inMsg.ProxyName, inMsg.ProxyType)
+		resp.RemoteAddr = remoteAddr
+		resp.ProxyType = inMsg.ProxyType
+		if inMsg.ProxyType == "http" || inMsg.ProxyType == "https" {
+			resp.RemoteAddr = fmt.Sprintf("%s://%s", inMsg.ProxyType, remoteAddr)
+		}
 	}
 	_ = ctl.msgDispatcher.Send(resp)
 }
@@ -504,7 +508,7 @@ func (ctl *Control) RegisterProxy(pxyMsg *msg.NewProxy) (remoteAddr string, err 
 	}
 
 	if ctl.pxyManager.Exist(pxyMsg.ProxyName) {
-		err = fmt.Errorf("隧道 [%s] 当前在线，请尝试使用强制下线隧道功能。", pxyMsg.ProxyName)
+		err = fmt.Errorf("隧道 [%s] 当前在线, 请尝试使用强制下线隧道功能。", pxyMsg.ProxyName)
 		return
 	}
 

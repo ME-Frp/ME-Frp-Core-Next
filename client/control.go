@@ -163,9 +163,12 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 	// Start a new proxy handler if no error got
 	err := ctl.pm.StartProxy(inMsg.ProxyName, inMsg.RemoteAddr, inMsg.Error)
 	if err != nil {
-		xl.Warnf("[%s] 启动隧道失败: %v", inMsg.ProxyName, err)
+		xl.Warnf("启动隧道 [%s] 失败: %v", inMsg.ProxyName, err)
 	} else {
-		xl.Infof("[%s] 启动隧道成功", inMsg.ProxyName)
+		if inMsg.ProxyType != "http" && inMsg.ProxyType != "https" {
+			inMsg.RemoteAddr = ctl.sessionCtx.Common.ServerAddr + ":" + inMsg.RemoteAddr
+		}
+		xl.Infof("启动 [%s] 隧道 [%s] 成功, 您可以使用 [%s] 访问您的服务", inMsg.ProxyType, inMsg.ProxyName, inMsg.RemoteAddr)
 	}
 }
 

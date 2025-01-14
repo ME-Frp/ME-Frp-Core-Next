@@ -44,9 +44,9 @@ var (
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "./frpc.ini", "ME Frp 客户端配置文件")
-	rootCmd.PersistentFlags().StringVarP(&cfgDir, "config_dir", "", "", "配置目录，为每个配置文件运行一个 ME Frp 隧道")
+	rootCmd.PersistentFlags().StringVarP(&cfgDir, "config_dir", "", "", "配置目录, 为每个配置文件运行一个 ME Frp 隧道")
 	rootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "v", false, "ME Frp 客户端版本")
-	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "严格配置解析模式，未知字段将导致错误")
+	rootCmd.PersistentFlags().BoolVarP(&strictConfigMode, "strict_config", "", true, "严格配置解析模式, 未知字段将导致错误")
 }
 
 var rootCmd = &cobra.Command{
@@ -116,7 +116,7 @@ func runClient(cfgFilePath string) error {
 		return err
 	}
 	if isLegacyFormat {
-		fmt.Printf("警告: INI 格式已弃用，将在未来版本中移除，请使用 Yaml/JSON/Toml 格式!\n")
+		fmt.Printf("警告: INI 格式已弃用, 将在未来版本中移除, 请使用 Yaml/JSON/Toml 格式!\n")
 	}
 
 	warning, err := validation.ValidateAllClientConfig(cfg, proxyCfgs, visitorCfgs)
@@ -138,7 +138,7 @@ func startService(
 	log.InitLogger(cfg.Log.To, cfg.Log.Level, int(cfg.Log.MaxDays), cfg.Log.DisablePrintColor)
 
 	if cfgFile != "" {
-		log.Infof("开始启动 ME Frp 隧道，配置文件 [%s]", cfgFile)
+		log.Infof("开始启动 ME Frp 隧道, 配置文件 [%s]", cfgFile)
 		defer log.Infof("ME Frp 客户端配置文件 [%s] 已停止", cfgFile)
 	}
 	svr, err := client.NewService(client.ServiceOptions{

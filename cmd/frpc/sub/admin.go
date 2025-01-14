@@ -37,9 +37,9 @@ func init() {
 		description string
 		handler     func(*v1.ClientCommonConfig) error
 	}{
-		{"reload", "Hot-Reload frpc configuration", ReloadHandler},
-		{"status", "Overview of all proxies status", StatusHandler},
-		{"stop", "Stop the running frpc", StopHandler},
+		{"reload", "重载 ME Frp 客户端配置", ReloadHandler},
+		{"status", "查看 ME Frp 隧道状态", StatusHandler},
+		{"stop", "停止 ME Frp 客户端", StopHandler},
 	}
 
 	for _, cmdConfig := range commands {
@@ -60,7 +60,7 @@ func NewAdminCommand(name, short string, handler func(*v1.ClientCommonConfig) er
 				os.Exit(1)
 			}
 			if cfg.WebServer.Port <= 0 {
-				fmt.Println("如果需要使用此功能，请设置 WebServer 端口")
+				fmt.Println("如果需要使用此功能, 请设置 WebServer 端口")
 				os.Exit(1)
 			}
 

@@ -163,7 +163,7 @@ func RegisterClientCommonConfigFlags(cmd *cobra.Command, c *v1.ClientCommonConfi
 		cmd.PersistentFlags().Int64VarP(&c.Log.MaxDays, "log_max_days", "", 3, "日志文件保留天数")
 		cmd.PersistentFlags().BoolVarP(&c.Log.DisablePrintColor, "disable_log_color", "", false, "禁用日志颜色")
 		cmd.PersistentFlags().StringVarP(&c.Transport.TLS.ServerName, "tls_server_name", "", "", "指定 TLS 证书的自定义服务器名称")
-		cmd.PersistentFlags().StringVarP(&c.DNSServer, "dns_server", "", "", "指定 DNS 服务器，而不使用系统默认的 DNS 服务器")
+		cmd.PersistentFlags().StringVarP(&c.DNSServer, "dns_server", "", "", "指定 DNS 服务器, 而不使用系统默认的 DNS 服务器")
 		c.Transport.TLS.Enable = cmd.PersistentFlags().BoolP("tls_enable", "", true, "启用 TLS 连接")
 	}
 	cmd.PersistentFlags().StringVarP(&c.User, "user", "u", "", "用户")

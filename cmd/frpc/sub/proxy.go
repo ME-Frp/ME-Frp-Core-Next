@@ -71,7 +71,7 @@ func init() {
 func NewProxyCommand(name string, c v1.ProxyConfigurer, clientCfg *v1.ClientCommonConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   name,
-		Short: fmt.Sprintf("启动 ME Frp 隧道 [%s]", name),
+		Short: fmt.Sprintf("启动 [%s] 隧道", name),
 		Run: func(cmd *cobra.Command, args []string) {
 			clientCfg.Complete()
 			if _, err := validation.ValidateClientCommonConfig(clientCfg); err != nil {

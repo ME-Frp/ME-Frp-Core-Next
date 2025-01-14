@@ -51,8 +51,8 @@ body{font-family:Arial,sans-serif;background-color:#f4f4f4;margin:0;line-height:
 </div>
 <div class="content">
 <h2>404 - 页面未找到</h2>
-<p>抱歉，您访问的页面不存在。</p>
-<p>请检查您输入的网址是否正确，或返回首页。</p>
+<p>抱歉, 您访问的页面不存在。</p>
+<p>请检查您输入的网址是否正确, 或返回首页。</p>
 </div>
 <div class="footer">
 <p>此页面由系统自动生成</p>

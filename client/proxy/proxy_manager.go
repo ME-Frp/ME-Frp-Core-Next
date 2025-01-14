@@ -170,6 +170,6 @@ func (pm *Manager) UpdateAll(proxyCfgs []v1.ProxyConfigurer) {
 		}
 	}
 	if len(addPxyNames) > 0 {
-		xl.Infof("隧道已添加: %s", addPxyNames)
+		xl.Infof("[%s] 隧道 %s 登记成功", proxyCfgs[0].GetBaseConfig().Type, addPxyNames)
 	}
 }

@@ -154,7 +154,7 @@ func (pxy *HTTPProxy) GetRealConn(remoteAddr string) (workConn net.Conn, err err
 	rAddr, errRet := net.ResolveTCPAddr("tcp", remoteAddr)
 	if errRet != nil {
 		xl.Warnf("解析 TCP 地址 [%s] 失败: %v", remoteAddr, errRet)
-		// 我们不在此处返回错误，因为 remoteAddr 对于没有启用隧道协议的隧道来说不是必需的
+		// 我们不在此处返回错误, 因为 remoteAddr 对于没有启用隧道协议的隧道来说不是必需的
 	}
 
 	tmpConn, errRet := pxy.GetWorkConnFromPool(rAddr, nil)

@@ -267,7 +267,7 @@ func (s *TunnelServer) parseClientAndProxyConfigurer(_ *tcpipForward, extraPaylo
 	}
 	pc := v1.NewProxyConfigurerByType(v1.ProxyType(proxyType))
 	if pc == nil {
-		return nil, nil, helpMessage, fmt.Errorf("创建隧道配置器错误")
+		return nil, nil, helpMessage, fmt.Errorf("登记隧道配置器错误")
 	}
 	config.RegisterProxyFlags(cmd, pc, config.WithSSHMode())
 
