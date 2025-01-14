@@ -58,7 +58,7 @@ func validateProxyBaseConfigForClient(c *v1.ProxyBaseConfig) error {
 
 	if c.Plugin.Type != "" {
 		if err := ValidateClientPluginOptions(c.Plugin.ClientPluginOptions); err != nil {
-			return fmt.Errorf("Plugin %s: %v", c.Plugin.Type, err)
+			return fmt.Errorf("错误的 Plugin [%s]: %v", c.Plugin.Type, err)
 		}
 	}
 	return nil
@@ -247,7 +247,7 @@ func ValidateAnnotations(annotations map[string]string) error {
 	var errs error
 	for k := range annotations {
 		for _, msg := range validation.IsQualifiedName(strings.ToLower(k)) {
-			errs = AppendError(errs, fmt.Errorf("Annotation Key %s 无效: %s", k, msg))
+			errs = AppendError(errs, fmt.Errorf("无效的 Annotation Key [%s]: %s", k, msg))
 		}
 	}
 	if err := ValidateAnnotationsSize(annotations); err != nil {
@@ -264,7 +264,7 @@ func ValidateAnnotationsSize(annotations map[string]string) error {
 		totalSize += (int64)(len(k)) + (int64)(len(v))
 	}
 	if totalSize > (int64)(TotalAnnotationSizeLimitB) {
-		return fmt.Errorf("Annotations Size %d 大于限制 %d", totalSize, TotalAnnotationSizeLimitB)
+		return fmt.Errorf("错误的 Annotations Size %d 大于限制 %d", totalSize, TotalAnnotationSizeLimitB)
 	}
 	return nil
 }

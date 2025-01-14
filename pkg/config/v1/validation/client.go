@@ -71,11 +71,11 @@ func ValidateClientCommonConfig(c *v1.ClientCommonConfig) (Warning, error) {
 	for _, f := range c.IncludeConfigFiles {
 		absDir, err := filepath.Abs(filepath.Dir(f))
 		if err != nil {
-			errs = AppendError(errs, fmt.Errorf("Include: 解析 %s 的目录失败: %v", f, err))
+			errs = AppendError(errs, fmt.Errorf("错误的 Include: 解析 %s 的目录失败: %v", f, err))
 			continue
 		}
 		if _, err := os.Stat(absDir); os.IsNotExist(err) {
-			errs = AppendError(errs, fmt.Errorf("Include: %s 的目录不存在", f))
+			errs = AppendError(errs, fmt.Errorf("错误的 Include: %s 的目录不存在", f))
 		}
 	}
 	return warnings, errs

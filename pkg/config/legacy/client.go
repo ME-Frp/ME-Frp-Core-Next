@@ -390,10 +390,10 @@ func (cfg *ClientCommonConf) Validate() error {
 	for _, f := range cfg.IncludeConfigFiles {
 		absDir, err := filepath.Abs(filepath.Dir(f))
 		if err != nil {
-			return fmt.Errorf("Include: 解析 %s 的目录失败: %v", f, err)
+			return fmt.Errorf("错误的 Include: 解析 %s 的目录失败: %v", f, err)
 		}
 		if _, err := os.Stat(absDir); os.IsNotExist(err) {
-			return fmt.Errorf("Include: %s 的目录不存在", f)
+			return fmt.Errorf("错误的 Include: %s 的目录不存在", f)
 		}
 	}
 	return nil

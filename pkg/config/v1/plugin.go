@@ -49,7 +49,7 @@ func (c *TypedClientPluginOptions) UnmarshalJSON(b []byte) error {
 
 	c.Type = typeStruct.Type
 	if c.Type == "" {
-		return errors.New("Plugin 类型不能为空")
+		return errors.New("错误: Plugin 类型不能为空")
 	}
 
 	v, ok := clientPluginOptionsTypeMap[typeStruct.Type]
