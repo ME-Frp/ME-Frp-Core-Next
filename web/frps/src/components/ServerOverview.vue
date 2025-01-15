@@ -42,8 +42,8 @@
           <n-descriptions-item label="每客户端最大端口数">
             {{ data.maxPortsPerClient }}
           </n-descriptions-item>
-          <n-descriptions-item label="允许端口">
-            <LongSpan :content="data.allowPortsStr || '未设置'" :length="30" />
+          <n-descriptions-item label="端口范围限制">
+            {{ data.allowPortsStr }}
           </n-descriptions-item>
           <n-descriptions-item label="心跳超时">
             {{ data.heartbeatTimeout }}
@@ -94,7 +94,6 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useMessage } from 'naive-ui'
 import * as echarts from 'echarts'
 import { DrawTrafficChart, DrawProxyChart } from '../utils/chart'
-import LongSpan from './LongSpan.vue'
 import { RefreshOutline, PowerOutline } from '@vicons/ionicons5'
 
 const message = useMessage()
@@ -158,6 +157,9 @@ const fetchData = () => {
         data.value.maxPortsPerClient = '无限制'
       }
       data.value.allowPortsStr = json.allowPortsStr
+      if (data.value.allowPortsStr == '') {
+        data.value.allowPortsStr = '未设置'
+      }
       data.value.tlsForce = json.tlsForce
       data.value.heartbeatTimeout = json.heartbeatTimeout
       data.value.clientCounts = json.clientCounts

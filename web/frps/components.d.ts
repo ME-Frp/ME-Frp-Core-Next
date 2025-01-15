@@ -7,7 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    LongSpan: typeof import('./src/components/LongSpan.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
@@ -33,7 +32,6 @@ declare module 'vue' {
     NSwitch: typeof import('naive-ui')['NSwitch']
     NTag: typeof import('naive-ui')['NTag']
     NText: typeof import('naive-ui')['NText']
-    NTooltip: typeof import('naive-ui')['NTooltip']
     ProxiesHTTP: typeof import('./src/components/ProxiesHTTP.vue')['default']
     ProxiesHTTPS: typeof import('./src/components/ProxiesHTTPS.vue')['default']
     ProxiesSTCP: typeof import('./src/components/ProxiesSTCP.vue')['default']
