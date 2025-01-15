@@ -1,5 +1,6 @@
 class BaseProxy {
   name: string
+  runId: string
   type: string
   annotations: Map<string, string>
   encryption: boolean
@@ -21,6 +22,7 @@ class BaseProxy {
 
   constructor(proxyStats: any) {
     this.name = proxyStats.name
+    this.runId = proxyStats.runId
     this.type = ''
     this.annotations = new Map<string, string>()
     if (proxyStats.conf?.annotations) {

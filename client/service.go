@@ -292,7 +292,11 @@ func (svr *Service) loopLoginUntilSuccess(maxInterval time.Duration, firstLoginE
 	xl := xlog.FromContextSafe(svr.ctx)
 
 	loginFunc := func() (bool, error) {
-		xl.Infof("尝试连接到节点...")
+		logInfo := "尝试连接到节点..."
+		if !firstLoginExit {
+			logInfo = "与节点断开连接，尝试重新连接..."
+		}
+		xl.Infof(logInfo)
 		conn, connector, err := svr.login()
 		if err != nil {
 			xl.Warnf("连接节点失败: %v", err)

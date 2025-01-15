@@ -614,8 +614,8 @@ func (svr *Service) RegisterWorkConn(workConn net.Conn, newMsg *msg.NewWorkConn)
 	xl := netpkg.NewLogFromConn(workConn)
 	ctl, exist := svr.ctlManager.GetByID(newMsg.RunID)
 	if !exist {
-		xl.Warnf("未找到 RunId [%s] 的客户端控制器", newMsg.RunID)
-		return fmt.Errorf("未找到 RunId [%s] 的客户端控制器", newMsg.RunID)
+		xl.Warnf("未找到 RunId [%s] 的客户端", newMsg.RunID)
+		return fmt.Errorf("未找到 RunId [%s] 的客户端", newMsg.RunID)
 	}
 	// server plugin hook
 	content := &plugin.NewWorkConnContent{
@@ -649,10 +649,19 @@ func (svr *Service) RegisterVisitorConn(visitorConn net.Conn, newMsg *msg.NewVis
 	if newMsg.RunID != "" {
 		ctl, exist := svr.ctlManager.GetByID(newMsg.RunID)
 		if !exist {
-			return fmt.Errorf("未找到 RunId [%s] 的客户端控制器", newMsg.RunID)
+			return fmt.Errorf("未找到 RunId [%s] 的访问者", newMsg.RunID)
 		}
 		visitorUser = ctl.loginMsg.User
 	}
 	return svr.rc.VisitorManager.NewConn(newMsg.ProxyName, visitorConn, newMsg.Timestamp, newMsg.SignKey,
 		newMsg.UseEncryption, newMsg.UseCompression, visitorUser)
+}
+
+func (svr *Service) CloseProxy(runId string) error {
+	ctl, ok := svr.ctlManager.GetByID(runId)
+	if !ok {
+		return fmt.Errorf("未找到 RunId [%s] 的客户端", runId)
+	}
+	ctl.Close()
+	return nil
 }

@@ -354,7 +354,7 @@ func (ctl *Control) worker() {
 	}
 
 	metrics.Server.CloseClient()
-	xl.Infof("客户端 [%s] 已成功断开连接", ctl.loginMsg.RunID)
+	xl.Infof("客户端已成功断开连接")
 	close(ctl.doneCh)
 }
 
@@ -398,7 +398,6 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		xl.Infof("登记 [%s] 隧道 [%s] 成功", inMsg.ProxyType, inMsg.ProxyName)
 		metrics.Server.NewProxy(inMsg.ProxyName, inMsg.ProxyType)
 		resp.RemoteAddr = remoteAddr
-		resp.ProxyType = inMsg.ProxyType
 		if inMsg.ProxyType == "http" || inMsg.ProxyType == "https" {
 			resp.RemoteAddr = fmt.Sprintf("%s://%s", inMsg.ProxyType, remoteAddr)
 		}

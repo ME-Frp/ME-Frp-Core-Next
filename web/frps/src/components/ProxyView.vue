@@ -90,7 +90,7 @@ const columns: DataTableColumns<BaseProxy> = [
     sorter: true
   },
   {
-    title: '流入流量',
+    title: '入网流量',
     key: 'trafficIn',
     sorter: true,
     render(row) {
@@ -98,7 +98,7 @@ const columns: DataTableColumns<BaseProxy> = [
     }
   },
   {
-    title: '流出流量',
+    title: '出网流量',
     key: 'trafficOut',
     sorter: true,
     render(row) {
@@ -136,29 +136,48 @@ const columns: DataTableColumns<BaseProxy> = [
     title: '操作',
     key: 'actions',
     render(row) {
-      return h(
-        NButton,
-        {
-          type: 'primary',
-          onClick: () => {
-            dialogVisibleName.value = row.name
-            dialogVisible.value = true
+      return h('div', [
+        h(
+          NButton,
+          {
+            type: 'primary',
+            style: 'margin-right: 5px',
+            onClick: () => {
+              dialogVisibleName.value = row.name
+              dialogVisible.value = true
+            }
+          },
+          {
+            default: () => [
+              h(NIcon, null, { default: () => h(StatsChartOutline) }),
+              ' 流量'
+            ]
           }
-        },
-        {
-          default: () => [
-            h(NIcon, null, { default: () => h(StatsChartOutline) }),
-            ' 流量'
-          ]
-        }
-      )
+        ),
+        h(
+          NButton,
+          {
+            type: 'error',
+            disabled: row.status !== 'online',
+            onClick: () => {
+              kickProxy(row)
+            }
+          },
+          {
+            default: () => [
+              h(NIcon, null, { default: () => h(CloseCircleOutline) }),
+              '强制下线'
+            ]
+          }
+        )
+      ])
     }
   }
 ]
 
 const clearOfflineProxies = () => {
-  fetch('../api/proxies?status=offline', {
-    method: 'DELETE',
+  fetch('../api/proxies/clearOffline', {
+    method: 'GET',
     credentials: 'include',
   })
     .then((res) => {
@@ -171,6 +190,25 @@ const clearOfflineProxies = () => {
     })
     .catch((err) => {
       message.error('清理离线隧道失败: ' + err.message)
+    })
+}
+
+const kickProxy = (proxy: BaseProxy) => {
+  fetch(`../api/client/kick`, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ runId: proxy.runId })
+  })
+    .then((res) => {
+      if (res.ok) {
+        message.success('成功下线隧道')
+        emit('refresh')
+      } else {
+        message.warning('下线隧道失败: ' + res.status + ' ' + res.statusText)
+      }
+    })
+    .catch((err) => {
+      message.error('下线隧道失败: ' + err.message)
     })
 }
 </script>

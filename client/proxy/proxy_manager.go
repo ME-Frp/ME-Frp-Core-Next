@@ -173,3 +173,12 @@ func (pm *Manager) UpdateAll(proxyCfgs []v1.ProxyConfigurer) {
 		xl.Infof("[%s] 隧道 %s 登记成功", proxyCfgs[0].GetBaseConfig().Type, addPxyNames)
 	}
 }
+
+func (pm *Manager) GetProxyConfig(name string) (v1.ProxyConfigurer, bool) {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	if pxy, ok := pm.proxies[name]; ok {
+		return pxy.Cfg, true
+	}
+	return nil, false
+}

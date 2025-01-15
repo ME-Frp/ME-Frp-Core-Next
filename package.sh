@@ -30,8 +30,8 @@ for os in $os_all; do
             if [ "x${extra}" != x"_" ]; then
                 suffix="${os}_${arch}_${extra}"
             fi
-            frp_dir_name="frp_${frp_version}_${suffix}"
-            frp_path="./packages/frp_${frp_version}_${suffix}"
+            frp_dir_name="${frp_version}_${suffix}"
+            frp_path="./packages/${frp_version}_${suffix}"
 
             if [ "x${os}" = x"windows" ]; then
                 if [ ! -f "./frpc_${os}_${arch}.exe" ]; then

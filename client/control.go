@@ -165,10 +165,15 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 	if err != nil {
 		xl.Warnf("启动隧道 [%s] 失败: %v", inMsg.ProxyName, err)
 	} else {
-		if inMsg.ProxyType != "http" && inMsg.ProxyType != "https" {
+		cfg, ok := ctl.pm.GetProxyConfig(inMsg.ProxyName)
+		if !ok {
+			xl.Warnf("内部错误：隧道 [%s] 未找到，您可以继续使用本隧道", inMsg.ProxyName)
+		}
+		proxyType := cfg.GetBaseConfig().Type
+		if proxyType != "http" && proxyType != "https" {
 			inMsg.RemoteAddr = ctl.sessionCtx.Common.ServerAddr + inMsg.RemoteAddr
 		}
-		xl.Infof("启动 [%s] 隧道 [%s] 成功, 您可以使用 [%s] 访问您的服务", inMsg.ProxyType, inMsg.ProxyName, inMsg.RemoteAddr)
+		xl.Infof("启动 [%s] 隧道 [%s] 成功, 您可以使用 [%s] 访问您的服务", proxyType, inMsg.ProxyName, inMsg.RemoteAddr)
 	}
 }
 

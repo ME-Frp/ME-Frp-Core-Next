@@ -53,7 +53,8 @@ func (svr *Service) registerRouteHandlers(helper *httppkg.RouterRegisterHelper) 
 	subRouter.HandleFunc("/api/proxy/{type}", svr.apiProxyByType).Methods("GET")
 	subRouter.HandleFunc("/api/proxy/{type}/{name}", svr.apiProxyByTypeAndName).Methods("GET")
 	subRouter.HandleFunc("/api/traffic/{name}", svr.apiProxyTraffic).Methods("GET")
-	subRouter.HandleFunc("/api/proxies", svr.deleteProxies).Methods("DELETE")
+	subRouter.HandleFunc("/api/proxies/clearOffline", svr.deleteProxies).Methods("GET")
+	subRouter.HandleFunc("/api/client/kick", svr.kickClient).Methods("POST")
 
 	// view
 	subRouter.Handle("/favicon.ico", http.FileServer(helper.AssetsFS)).Methods("GET")
@@ -197,6 +198,7 @@ func getConfByType(proxyType string) any {
 // Get proxy info.
 type ProxyStatsInfo struct {
 	Name            string `json:"name"`
+	RunID           string `json:"runId"`
 	Conf            any    `json:"conf"`
 	ClientVersion   string `json:"clientVersion,omitempty"`
 	TodayTrafficIn  int64  `json:"todayTrafficIn"`
@@ -242,6 +244,7 @@ func (svr *Service) getProxyStatsByType(proxyType string) (proxyInfos []*ProxySt
 	for _, ps := range proxyStats {
 		proxyInfo := &ProxyStatsInfo{}
 		if pxy, ok := svr.pxyManager.GetByName(ps.Name); ok {
+			proxyInfo.RunID = pxy.GetLoginMsg().RunID
 			content, err := json.Marshal(pxy.GetConfigurer())
 			if err != nil {
 				log.Warnf("解析隧道 [%s] 配置信息失败: %v", ps.Name, err)
@@ -273,6 +276,7 @@ func (svr *Service) getProxyStatsByType(proxyType string) (proxyInfos []*ProxySt
 // Get proxy info by name.
 type GetProxyStatsResp struct {
 	Name            string `json:"name"`
+	RunID           string `json:"runId"`
 	Conf            any    `json:"conf"`
 	TodayTrafficIn  int64  `json:"todayTrafficIn"`
 	TodayTrafficOut int64  `json:"todayTrafficOut"`
@@ -316,6 +320,7 @@ func (svr *Service) getProxyStatsByTypeAndName(proxyType string, proxyName strin
 		msg = "未找到隧道信息"
 	} else {
 		if pxy, ok := svr.pxyManager.GetByName(proxyName); ok {
+			proxyInfo.RunID = pxy.GetLoginMsg().RunID
 			content, err := json.Marshal(pxy.GetConfigurer())
 			if err != nil {
 				log.Warnf("解析隧道 [%s] 配置信息失败: %v", ps.Name, err)
@@ -382,7 +387,7 @@ func (svr *Service) apiProxyTraffic(w http.ResponseWriter, r *http.Request) {
 	res.Msg = string(buf)
 }
 
-// DELETE /api/proxies?status=offline
+// GET /api/proxies/clearOffline
 func (svr *Service) deleteProxies(w http.ResponseWriter, r *http.Request) {
 	res := GeneralResponse{Code: 200}
 
@@ -394,13 +399,45 @@ func (svr *Service) deleteProxies(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte(res.Msg))
 		}
 	}()
-
-	status := r.URL.Query().Get("status")
-	if status != "offline" {
-		res.Code = 400
-		res.Msg = "status 仅支持 offline"
-		return
-	}
 	cleared, total := mem.StatsCollector.ClearOfflineProxies()
 	log.Infof("清理 [%d] 个离线隧道, 共 [%d] 个隧道", cleared, total)
+}
+
+// GET /api/client/kick
+type CloseUserResp struct {
+	Status int    `json:"status"`
+	Msg    string `json:"message"`
+}
+
+func (svr *Service) kickClient(w http.ResponseWriter, r *http.Request) {
+	var (
+		buf  []byte
+		resp = CloseUserResp{}
+	)
+	var bodyMap struct {
+		RunID string `json:"runId"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&bodyMap); err != nil {
+		resp.Status = 400
+		resp.Msg = "无效的请求体"
+		return
+	}
+	runId := bodyMap.RunID
+	log.Infof("HTTP 请求: [%s]", r.URL.Path)
+	defer func() {
+		log.Infof("HTTP 响应: [%s] 状态码 [%d]", r.URL.Path, resp.Status)
+	}()
+	err := svr.CloseProxy(runId)
+	if err != nil {
+		resp.Status = 404
+		resp.Msg = err.Error()
+	} else {
+		resp.Status = 200
+		resp.Msg = "OK"
+	}
+	buf, _ = json.Marshal(&resp)
+	_, err = w.Write(buf)
+	if err != nil {
+		return
+	}
 }

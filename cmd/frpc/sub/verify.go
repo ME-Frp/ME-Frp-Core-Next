@@ -33,7 +33,7 @@ var verifyCmd = &cobra.Command{
 	Short: "验证配置文件是否有效",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cfgFile == "" {
-			fmt.Println("ME Frp 客户端: 未指定配置文件")
+			fmt.Println("错误: 未指定配置文件")
 			return nil
 		}
 
@@ -51,7 +51,7 @@ var verifyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("ME Frp 客户端: 配置文件 %s 语法正确\n", cfgFile)
+		fmt.Printf("提示: 配置文件 %s 语法正确\n", cfgFile)
 		return nil
 	},
 }

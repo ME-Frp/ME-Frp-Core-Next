@@ -6,28 +6,29 @@
           <div class="header-content">
             <div class="left">
               <n-popover trigger="click" placement="bottom-start" :show="showMenu" @update:show="showMenu = $event"
-                :raw="true" class="mobile-only">
+                v-if="isMobile">
                 <template #trigger>
-                  <n-button text class="menu-trigger mobile-only">
+                  <n-button text class="menu-trigger">
                     <n-icon size="24">
                       <menu-outline />
                     </n-icon>
                   </n-button>
                 </template>
                 <div class="mobile-menu">
-                  <n-menu :value="currentPath" :options="menuOptions" @update:value="handleMobileSelect" />
+                  <n-menu 
+                    :value="currentPath" 
+                    :options="menuOptions" 
+                    :expanded-keys="expandedKeys"
+                    @update:value="handleMobileSelect" 
+                  />
                 </div>
               </n-popover>
-              <n-text style="font-size: 18px; font-weight: 500;">
+              <n-text class="logo">
                 ME Frp 镜缘映射 - 服务端
               </n-text>
             </div>
-            <div class="header-right">
-              <n-switch 
-                v-model:value="darkmodeSwitch" 
-                @update:value="toggleDark"
-                :rail-style="railStyle"
-              >
+            <div class="right">
+              <n-switch v-model:value="darkmodeSwitch" @update:value="toggleDark" :rail-style="railStyle">
                 <template #checked>
                   <n-icon><moon-outline /></n-icon>
                 </template>
@@ -39,17 +40,18 @@
           </div>
         </n-layout-header>
 
-        <n-layout has-sider position="absolute" style="top: 64px">
-          <n-layout-sider bordered collapse-mode="width" :collapsed-width="64" :width="240" show-trigger
-            :native-scrollbar="false" class="desktop-only">
-            <n-menu :value="currentPath" :options="menuOptions" :expanded-keys="expandedKeys"
-              @update:value="handleSelect" @update:expanded-keys="handleExpand" />
+        <n-layout has-sider position="absolute" style="top: 64px;">
+          <n-layout-sider v-show="!isMobile" bordered collapse-mode="width" :collapsed-width="64" :width="240"
+            :collapsed="isCollapsed" show-trigger :native-scrollbar="false" @collapse="isCollapsed = true"
+            @expand="isCollapsed = false">
+            <n-menu :value="currentPath" :options="menuOptions" :expanded-keys="expandedKeys" :collapsed-width="64"
+              :collapsed-icon-size="24" :icon-size="22" @update:value="handleSelect"
+              @update:expanded-keys="handleExpand" />
           </n-layout-sider>
 
-          <n-layout position="absolute" :style="contentStyle">
-            <n-layout-content :native-scrollbar="false" content-style="padding: 24px;"
-              style="height: calc(100vh - 64px)">
-              <router-view />
+          <n-layout :native-scrollbar="false">
+            <n-layout-content style="padding: 24px;">
+              <router-view ref="overviewRef" />
             </n-layout-content>
           </n-layout>
         </n-layout>
@@ -57,6 +59,92 @@
     </n-message-provider>
   </n-config-provider>
 </template>
+
+<style lang="scss" scoped>
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  height: 64px;
+  background: var(--n-color);
+  border-bottom: 1px solid var(--n-border-color);
+  position: relative;
+  z-index: 1;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.menu-trigger {
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.n-menu-item-content) {
+  justify-content: flex-start !important;
+}
+
+:deep(.n-menu-item-content-header) {
+  align-items: center;
+}
+
+.n-layout-sider {
+  height: calc(100vh - 64px);
+}
+
+.n-layout-content {
+  min-height: calc(100vh - 64px);
+}
+
+@media (max-width: 700px) {
+  .n-layout-content {
+    padding: 16px !important;
+  }
+}
+
+.mobile-menu {
+  min-width: 200px;
+  margin: -8px -16px;
+  background-color: var(--n-color);
+  border-radius: 3px;
+  box-shadow: var(--n-box-shadow);
+}
+
+:deep(.n-popover) {
+  padding: 0;
+}
+
+:deep(.n-popover-content) {
+  padding: 0;
+}
+</style>
 
 <script setup lang="ts">
 import { themeOverrides } from './constants/theme'
@@ -68,7 +156,7 @@ import {
   ServerOutline,
   SunnyOutline,
   MoonOutline,
-  MenuOutline
+  MenuOutline,
 } from '@vicons/ionicons5'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -162,19 +250,13 @@ const handleExpand = (keys: string[]) => {
 }
 
 const showMenu = ref(false)
-
-const isMobile = ref(window.innerWidth <= 768)
+const isMobile = ref(window.innerWidth <= 700)
+const isCollapsed = ref(false)
 
 // 监听窗口大小变化
 const handleWindowResize = () => {
-  isMobile.value = window.innerWidth <= 768
+  isMobile.value = window.innerWidth <= 700
 }
-
-// 根据屏幕宽度计算内容区域样式
-const contentStyle = computed(() => ({
-  left: isMobile.value ? '0' : '240px',
-  right: '0'
-}))
 
 onMounted(() => {
   window.addEventListener('resize', handleWindowResize)
@@ -186,11 +268,7 @@ onBeforeUnmount(() => {
 
 // 移动端菜单选择处理
 const handleMobileSelect = (key: string) => {
-  if (key === 'help') {
-    window.open('https://github.com/fatedier/frp')
-  } else {
-    router.push(key)
-  }
+  router.push(key)
   showMenu.value = false
 }
 
@@ -201,8 +279,6 @@ const railStyle = ({ focused, checked }: { focused: boolean; checked: boolean })
     boxShadow: focused ? `0 0 0 2px ${themeOverrides.common?.primaryColorSuppl}` : undefined
   }
 }
-</script>
 
-<style lang="scss" scoped>
-@use './assets/styles/app.scss';
-</style>
+const overviewRef = ref()
+</script>
