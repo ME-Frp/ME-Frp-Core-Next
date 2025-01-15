@@ -507,7 +507,7 @@ func (ctl *Control) RegisterProxy(pxyMsg *msg.NewProxy) (remoteAddr string, err 
 	}
 
 	if ctl.pxyManager.Exist(pxyMsg.ProxyName) {
-		err = fmt.Errorf("隧道 [%s] 当前在线, 请尝试使用强制下线隧道功能。", pxyMsg.ProxyName)
+		err = fmt.Errorf("隧道 [%s] 当前在线, 请尝试使用强制下线隧道功能", pxyMsg.ProxyName)
 		return
 	}
 
