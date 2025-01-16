@@ -15,9 +15,13 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
@@ -240,11 +244,11 @@ func (ctl *Control) RegisterWorkConn(conn net.Conn) error {
 
 	select {
 	case ctl.workConnCh <- conn:
-		xl.Debugf("新工作连接注册")
+		xl.Debugf("新的工作连接已登记")
 		return nil
 	default:
-		xl.Debugf("工作连接池已满, 丢弃")
-		return fmt.Errorf("工作连接池已满, 丢弃")
+		xl.Warnf("工作连接池已满, 丢弃新连接")
+		return fmt.Errorf("工作连接池已满")
 	}
 }
 
@@ -335,6 +339,16 @@ func (ctl *Control) worker() {
 
 	for _, pxy := range ctl.proxies {
 		pxy.Close()
+		reqBody := struct {
+			ProxyName string `json:"proxyName"`
+		}{
+			ProxyName: pxy.GetName(),
+		}
+		reqBytes, _ := json.Marshal(reqBody)
+		req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/frp/proxyClosed", ctl.serverCfg.MefrpApi.ApiUrl), bytes.NewBuffer(reqBytes))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s|%d", ctl.serverCfg.MefrpApi.Token, ctl.serverCfg.MefrpApi.NodeId))
+		http.DefaultClient.Do(req)
 		ctl.pxyManager.Del(pxy.GetName())
 		metrics.Server.CloseProxy(pxy.GetName(), pxy.GetConfigurer().GetBaseConfig().Type)
 
@@ -354,6 +368,7 @@ func (ctl *Control) worker() {
 	}
 
 	metrics.Server.CloseClient()
+
 	xl.Infof("客户端已成功断开连接")
 	close(ctl.doneCh)
 }
@@ -380,29 +395,88 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		NewProxy: *inMsg,
 	}
 	var remoteAddr string
+	if ctl.loginMsg.User == "" {
+		xl.Warnf("用户 Token 为空")
+		_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
+			ProxyName: inMsg.ProxyName,
+			Error:     "用户 Token 为空，请检查配置",
+		})
+		return
+	}
+	reqBody := struct {
+		ProxyName string `json:"proxyName"`
+		RunId     string `json:"runId"`
+	}{
+		ProxyName: inMsg.ProxyName,
+		RunId:     ctl.runID,
+	}
+	reqBytes, _ := json.Marshal(reqBody)
+	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/frp/proxyStarted", ctl.serverCfg.MefrpApi.ApiUrl), bytes.NewBuffer(reqBytes))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s|%d", ctl.serverCfg.MefrpApi.Token, ctl.serverCfg.MefrpApi.NodeId))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		xl.Infof("用户 [%s] 的隧道校验成功: %v", ctl.loginMsg.User, err.Error())
+		_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
+			ProxyName: inMsg.ProxyName,
+			Error:     "隧道校验失败: " + err.Error(),
+		})
+		return
+	} else if resp.StatusCode != 200 {
+		var respData struct {
+			Code    int    `json:"code"`
+			Data    string `json:"data"`
+			Message string `json:"message"`
+		}
+		body, _ := io.ReadAll(resp.Body)
+		if err := json.Unmarshal(body, &respData); err != nil {
+			xl.Errorf("解析响应失败: %v", err)
+			_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
+				ProxyName: inMsg.ProxyName,
+				Error:     "隧道校验失败: " + string(body),
+			})
+			return
+		}
+		xl.Warnf("用户 [%s] 的隧道校验失败: %v", ctl.loginMsg.User, respData.Message)
+		_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
+			ProxyName: inMsg.ProxyName,
+			Error:     "隧道校验失败: " + respData.Message,
+		})
+		return
+	}
 	retContent, err := ctl.pluginManager.NewProxy(content)
 	if err == nil {
 		inMsg = &retContent.NewProxy
 		remoteAddr, err = ctl.RegisterProxy(inMsg)
+	} else {
+		xl.Warnf("登记隧道 [%s] 失败: %v", inMsg.ProxyName, err)
+		_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
+			ProxyName: inMsg.ProxyName,
+			Error: util.GenerateResponseErrorString(fmt.Sprintf("登记隧道 [%s] 失败", inMsg.ProxyName),
+				err, lo.FromPtr(ctl.serverCfg.DetailedErrorsToClient)),
+		})
+		return
 	}
 
-	// register proxy in this control
-	resp := &msg.NewProxyResp{
-		ProxyName: inMsg.ProxyName,
-	}
 	if err != nil {
 		xl.Warnf("登记 [%s] 隧道 [%s] 失败: %v", inMsg.ProxyType, inMsg.ProxyName, err)
-		resp.Error = util.GenerateResponseErrorString(fmt.Sprintf("登记隧道 [%s] 失败", inMsg.ProxyName),
-			err, lo.FromPtr(ctl.serverCfg.DetailedErrorsToClient))
-	} else {
-		xl.Infof("登记 [%s] 隧道 [%s] 成功", inMsg.ProxyType, inMsg.ProxyName)
-		metrics.Server.NewProxy(inMsg.ProxyName, inMsg.ProxyType)
-		resp.RemoteAddr = remoteAddr
-		if inMsg.ProxyType == "http" || inMsg.ProxyType == "https" {
-			resp.RemoteAddr = fmt.Sprintf("%s://%s", inMsg.ProxyType, remoteAddr)
-		}
+		_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
+			ProxyName: inMsg.ProxyName,
+			Error: util.GenerateResponseErrorString(fmt.Sprintf("登记隧道 [%s] 失败", inMsg.ProxyName),
+				err, lo.FromPtr(ctl.serverCfg.DetailedErrorsToClient)),
+		})
+		return
 	}
-	_ = ctl.msgDispatcher.Send(resp)
+	regResp := &msg.NewProxyResp{
+		ProxyName: inMsg.ProxyName,
+	}
+	metrics.Server.NewProxy(inMsg.ProxyName, inMsg.ProxyType)
+	regResp.RemoteAddr = remoteAddr
+	if inMsg.ProxyType == "http" || inMsg.ProxyType == "https" {
+		regResp.RemoteAddr = fmt.Sprintf("%s://%s", inMsg.ProxyType, remoteAddr)
+	}
+	xl.Infof("登记 [%s] 隧道 [%s] 成功", inMsg.ProxyType, inMsg.ProxyName)
+	_ = ctl.msgDispatcher.Send(regResp)
 }
 
 func (ctl *Control) handlePing(m msg.Message) {

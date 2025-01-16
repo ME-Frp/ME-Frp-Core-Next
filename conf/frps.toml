@@ -1,1 +1,5 @@
 bindPort = 7000
+
+mefrpApi.apiUrl = ""
+mefrpApi.token = "MEFrpToken"
+mefrpApi.nodeId = 1

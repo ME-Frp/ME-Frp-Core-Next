@@ -96,6 +96,9 @@ type ServerConfig struct {
 	AllowPorts []types.PortsRange `json:"allowPorts,omitempty"`
 
 	HTTPPlugins []HTTPPluginOptions `json:"httpPlugins,omitempty"`
+
+	// MefrpApi 配置
+	MefrpApi MefrpApiConfig `json:"mefrpApi"`
 }
 
 func (c *ServerConfig) Complete() {
@@ -207,4 +210,10 @@ type SSHTunnelGateway struct {
 
 func (c *SSHTunnelGateway) Complete() {
 	c.AutoGenPrivateKeyPath = util.EmptyOr(c.AutoGenPrivateKeyPath, "./.autogen_ssh_key")
+}
+
+type MefrpApiConfig struct {
+	ApiUrl string `json:"apiUrl"`
+	Token  string `json:"token"`
+	NodeId int64  `json:"nodeId"`
 }

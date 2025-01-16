@@ -112,7 +112,7 @@ func (pxy *BaseProxy) GetConfigurer() v1.ProxyConfigurer {
 
 func (pxy *BaseProxy) Close() {
 	xl := xlog.FromContextSafe(pxy.ctx)
-	xl.Infof("proxy closing")
+	xl.Infof("隧道正在关闭")
 	for _, l := range pxy.listeners {
 		l.Close()
 	}

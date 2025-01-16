@@ -190,7 +190,7 @@ func NewService(cfg *v1.ServerConfig) (*Service, error) {
 	// Init all plugins
 	for _, p := range cfg.HTTPPlugins {
 		svr.pluginManager.Register(plugin.NewHTTPPluginOptions(p))
-		log.Infof("Plugin [%s] 已被注册", p.Name)
+		log.Infof("Plugin [%s] 已被登记", p.Name)
 	}
 	svr.rc.PluginManager = svr.pluginManager
 
