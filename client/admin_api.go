@@ -31,7 +31,7 @@ import (
 	"github.com/fatedier/frp/pkg/config/v1/validation"
 	httppkg "github.com/fatedier/frp/pkg/util/http"
 	"github.com/fatedier/frp/pkg/util/log"
-	netpkg "github.com/fatedier/frp/pkg/util/net"
+	// netpkg "github.com/fatedier/frp/pkg/util/net"
 )
 
 type GeneralResponse struct {
@@ -40,26 +40,26 @@ type GeneralResponse struct {
 }
 
 func (svr *Service) registerRouteHandlers(helper *httppkg.RouterRegisterHelper) {
-	helper.Router.HandleFunc("/healthz", svr.healthz)
-	subRouter := helper.Router.NewRoute().Subrouter()
+	// helper.Router.HandleFunc("/healthz", svr.healthz)
+	// subRouter := helper.Router.NewRoute().Subrouter()
 
-	subRouter.Use(helper.AuthMiddleware.Middleware)
+	// subRouter.Use(helper.AuthMiddleware.Middleware)
 
 	// api, see admin_api.go
-	subRouter.HandleFunc("/api/reload", svr.apiReload).Methods("GET")
-	subRouter.HandleFunc("/api/stop", svr.apiStop).Methods("POST")
-	subRouter.HandleFunc("/api/status", svr.apiStatus).Methods("GET")
-	subRouter.HandleFunc("/api/config", svr.apiGetConfig).Methods("GET")
-	subRouter.HandleFunc("/api/config", svr.apiPutConfig).Methods("PUT")
+	// subRouter.HandleFunc("/api/reload", svr.apiReload).Methods("GET")
+	// subRouter.HandleFunc("/api/stop", svr.apiStop).Methods("POST")
+	// subRouter.HandleFunc("/api/status", svr.apiStatus).Methods("GET")
+	// subRouter.HandleFunc("/api/config", svr.apiGetConfig).Methods("GET")
+	// subRouter.HandleFunc("/api/config", svr.apiPutConfig).Methods("PUT")
 
-	// view
-	subRouter.Handle("/favicon.ico", http.FileServer(helper.AssetsFS)).Methods("GET")
-	subRouter.PathPrefix("/static/").Handler(
-		netpkg.MakeHTTPGzipHandler(http.StripPrefix("/static/", http.FileServer(helper.AssetsFS))),
-	).Methods("GET")
-	subRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/static/", http.StatusMovedPermanently)
-	})
+	// // view
+	// subRouter.Handle("/favicon.ico", http.FileServer(helper.AssetsFS)).Methods("GET")
+	// subRouter.PathPrefix("/static/").Handler(
+	// 	netpkg.MakeHTTPGzipHandler(http.StripPrefix("/static/", http.FileServer(helper.AssetsFS))),
+	// ).Methods("GET")
+	// subRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	http.Redirect(w, r, "/static/", http.StatusMovedPermanently)
+	// })
 }
 
 // /healthz

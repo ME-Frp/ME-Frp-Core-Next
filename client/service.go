@@ -31,8 +31,8 @@ import (
 	"github.com/fatedier/frp/pkg/auth"
 	v1 "github.com/fatedier/frp/pkg/config/v1"
 	"github.com/fatedier/frp/pkg/msg"
-	httppkg "github.com/fatedier/frp/pkg/util/http"
-	"github.com/fatedier/frp/pkg/util/log"
+
+	// "github.com/fatedier/frp/pkg/util/log"
 	netpkg "github.com/fatedier/frp/pkg/util/net"
 	"github.com/fatedier/frp/pkg/util/version"
 	"github.com/fatedier/frp/pkg/util/wait"
@@ -108,7 +108,7 @@ type Service struct {
 	authSetter auth.Setter
 
 	// web server for admin UI and apis
-	webServer *httppkg.Server
+	// webServer *httppkg.Server
 
 	cfgMu       sync.RWMutex
 	common      *v1.ClientCommonConfig
@@ -133,18 +133,18 @@ type Service struct {
 func NewService(options ServiceOptions) (*Service, error) {
 	setServiceOptionsDefault(&options)
 
-	var webServer *httppkg.Server
-	if options.Common.WebServer.Port > 0 {
-		ws, err := httppkg.NewServer(options.Common.WebServer)
-		if err != nil {
-			return nil, err
-		}
-		webServer = ws
-	}
+	// var webServer *httppkg.Server
+	// if options.Common.WebServer.Port > 0 {
+	// 	ws, err := httppkg.NewServer(options.Common.WebServer)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	webServer = ws
+	// }
 	s := &Service{
-		ctx:              context.Background(),
-		authSetter:       auth.NewAuthSetter(options.Common.Auth),
-		webServer:        webServer,
+		ctx:        context.Background(),
+		authSetter: auth.NewAuthSetter(options.Common.Auth),
+		// webServer:        webServer,
 		common:           options.Common,
 		configFilePath:   options.ConfigFilePath,
 		proxyCfgs:        options.ProxyCfgs,
@@ -153,9 +153,9 @@ func NewService(options ServiceOptions) (*Service, error) {
 		connectorCreator: options.ConnectorCreator,
 		handleWorkConnCb: options.HandleWorkConnCb,
 	}
-	if webServer != nil {
-		webServer.RouteRegister(s.registerRouteHandlers)
-	}
+	// if webServer != nil {
+	// 	webServer.RouteRegister(s.registerRouteHandlers)
+	// }
 	return s, nil
 }
 
@@ -169,14 +169,14 @@ func (svr *Service) Run(ctx context.Context) error {
 		netpkg.SetDefaultDNSAddress(svr.common.DNSServer)
 	}
 
-	if svr.webServer != nil {
-		go func() {
-			log.Infof("admin server listen on %s", svr.webServer.Address())
-			if err := svr.webServer.Run(); err != nil {
-				log.Warnf("admin server exit with error: %v", err)
-			}
-		}()
-	}
+	// if svr.webServer != nil {
+	// 	go func() {
+	// 		log.Infof("admin server listen on %s", svr.webServer.Address())
+	// 		if err := svr.webServer.Run(); err != nil {
+	// 			log.Warnf("admin server exit with error: %v", err)
+	// 		}
+	// 	}()
+	// }
 
 	// first login to frps
 	svr.loopLoginUntilSuccess(10*time.Second, lo.FromPtr(svr.common.LoginFailExit))
