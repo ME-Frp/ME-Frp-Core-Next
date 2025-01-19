@@ -28,7 +28,6 @@ import { h, ref } from 'vue'
 import { NTag, NButton, NIcon, useMessage, type DataTableColumns } from 'naive-ui'
 import { 
   RefreshOutline, 
-  TrashOutline,
   StatsChartOutline,
   CheckmarkCircleOutline,
   CloseCircleOutline
