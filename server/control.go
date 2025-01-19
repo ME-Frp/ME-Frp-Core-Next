@@ -444,6 +444,38 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		})
 		return
 	}
+
+	var apiResp struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+		Data    struct {
+			OutBound int64 `json:"outBound"`
+			InBound  int64 `json:"inBound"`
+		} `json:"data"`
+	}
+	body, _ := io.ReadAll(resp.Body)
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		xl.Errorf("获取带宽限制失败: %v", err)
+	} else {
+		if apiResp.Data.OutBound > 0 || apiResp.Data.InBound > 0 {
+			outBoundMB := apiResp.Data.OutBound / (1024 * 1024)
+			inBoundMB := apiResp.Data.InBound / (1024 * 1024)
+			if outBoundMB > 0 && inBoundMB > 0 {
+				inMsg.BandwidthLimit = fmt.Sprintf("%dMB %dMB", inBoundMB, outBoundMB)
+			} else if outBoundMB > 0 {
+				inMsg.BandwidthLimit = fmt.Sprintf("%dMB", outBoundMB)
+			} else if inBoundMB > 0 {
+				inMsg.BandwidthLimit = fmt.Sprintf("%dMB", inBoundMB)
+			}
+			inMsg.BandwidthLimitMode = "client"
+			_ = ctl.msgDispatcher.Send(&msg.GetProxyBandwidthLimitResp{
+				ProxyName: inMsg.ProxyName,
+				OutBound:  apiResp.Data.OutBound,
+				InBound:   apiResp.Data.InBound,
+			})
+		}
+	}
+
 	retContent, err := ctl.pluginManager.NewProxy(content)
 	if err == nil {
 		inMsg = &retContent.NewProxy

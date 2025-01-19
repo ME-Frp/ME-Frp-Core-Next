@@ -138,6 +138,12 @@ type NewProxyResp struct {
 	Error      string `json:"error,omitempty"`
 }
 
+type GetProxyBandwidthLimitResp struct {
+	ProxyName string `json:"proxy_name,omitempty"`
+	OutBound  int64  `json:"out_bound,omitempty"`
+	InBound   int64  `json:"in_bound,omitempty"`
+}
+
 type CloseProxy struct {
 	ProxyName string `json:"proxy_name,omitempty"`
 }

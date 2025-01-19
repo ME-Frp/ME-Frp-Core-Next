@@ -234,8 +234,15 @@ func (ctl *Control) connectServer() (net.Conn, error) {
 func (ctl *Control) registerMsgHandlers() {
 	ctl.msgDispatcher.RegisterHandler(&msg.ReqWorkConn{}, msg.AsyncHandler(ctl.handleReqWorkConn))
 	ctl.msgDispatcher.RegisterHandler(&msg.NewProxyResp{}, ctl.handleNewProxyResp)
+	ctl.msgDispatcher.RegisterHandler(&msg.GetProxyBandwidthLimitResp{}, ctl.handleGetProxyBandwidthLimitResp)
 	ctl.msgDispatcher.RegisterHandler(&msg.NatHoleResp{}, ctl.handleNatHoleResp)
 	ctl.msgDispatcher.RegisterHandler(&msg.Pong{}, ctl.handlePong)
+}
+
+func (ctl *Control) handleGetProxyBandwidthLimitResp(m msg.Message) {
+	xl := ctl.xl
+	inMsg := m.(*msg.GetProxyBandwidthLimitResp)
+	xl.Infof("隧道 [%s] 带宽限制: %d Mbps ↑ , %d Mbps ↓", inMsg.ProxyName, inMsg.OutBound, inMsg.InBound)
 }
 
 // heartbeatWorker sends heartbeat to server and check heartbeat timeout.
