@@ -5,17 +5,6 @@
         {{ proxyType.toUpperCase() }} 隧道
       </n-text>
       <n-space>
-        <n-popconfirm positive-text="确认" negative-text="取消" @positive-click="clearOfflineProxies">
-          <template #trigger>
-            <n-button>
-              <template #icon>
-                <n-icon><trash-outline /></n-icon>
-              </template>
-              清理离线隧道
-            </n-button>
-          </template>
-          确定要清理所有离线隧道吗？
-        </n-popconfirm>
         <n-button @click="$emit('refresh')">
           <template #icon>
             <n-icon><refresh-outline /></n-icon>
@@ -174,24 +163,6 @@ const columns: DataTableColumns<BaseProxy> = [
     }
   }
 ]
-
-const clearOfflineProxies = () => {
-  fetch('../api/proxies/clearOffline', {
-    method: 'GET',
-    credentials: 'include',
-  })
-    .then((res) => {
-      if (res.ok) {
-        message.success('成功清理离线隧道')
-        emit('refresh')
-      } else {
-        message.warning('清理离线隧道失败: ' + res.status + ' ' + res.statusText)
-      }
-    })
-    .catch((err) => {
-      message.error('清理离线隧道失败: ' + err.message)
-    })
-}
 
 const kickProxy = (proxy: BaseProxy) => {
   fetch(`../api/client/kick`, {

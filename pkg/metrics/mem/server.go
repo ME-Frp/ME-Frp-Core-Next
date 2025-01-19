@@ -33,7 +33,7 @@ var (
 func init() {
 	ServerMetrics = sm
 	StatsCollector = sm
-	sm.run()
+	// sm.run()
 }
 
 type serverMetrics struct {
@@ -55,39 +55,20 @@ func newServerMetrics() *serverMetrics {
 		},
 	}
 }
-
-func (m *serverMetrics) run() {
-	go func() {
-		for {
-			time.Sleep(12 * time.Hour)
-			start := time.Now()
-			count, total := m.clearUselessInfo(time.Duration(7*24) * time.Hour)
-			log.Debugf("清除无用隧道统计数据 %d/%d, 耗时 %v", count, total, time.Since(start))
-		}
-	}()
-}
-
-func (m *serverMetrics) clearUselessInfo(continuousOfflineDuration time.Duration) (int, int) {
-	count := 0
+func (m *serverMetrics) clearUselessCalcData() int {
 	total := 0
-	// To check if there are any proxies that have been closed for more than continuousOfflineDuration and remove them.
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	total = len(m.info.ProxyStatistics)
-	for name, data := range m.info.ProxyStatistics {
-		if !data.LastCloseTime.IsZero() &&
-			data.LastStartTime.Before(data.LastCloseTime) &&
-			time.Since(data.LastCloseTime) > continuousOfflineDuration {
-			delete(m.info.ProxyStatistics, name)
-			count++
-			log.Tracef("清除隧道 [%s] 的统计数据, 上次关闭时间: [%s]", name, data.LastCloseTime.String())
-		}
+	for name := range m.info.ProxyStatistics {
+		delete(m.info.ProxyStatistics, name)
+		log.Tracef("清除了隧道 [%s] 的统计数据", name)
 	}
-	return count, total
+	return total
 }
 
-func (m *serverMetrics) ClearOfflineProxies() (int, int) {
-	return m.clearUselessInfo(0)
+func (m *serverMetrics) ClearProxiesCalcData() int {
+	return m.clearUselessCalcData()
 }
 
 func (m *serverMetrics) NewClient() {

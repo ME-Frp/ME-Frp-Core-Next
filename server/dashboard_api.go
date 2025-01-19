@@ -53,7 +53,7 @@ func (svr *Service) registerRouteHandlers(helper *httppkg.RouterRegisterHelper) 
 	subRouter.HandleFunc("/api/proxy/{type}", svr.apiProxyByType).Methods("GET")
 	subRouter.HandleFunc("/api/proxy/{type}/{name}", svr.apiProxyByTypeAndName).Methods("GET")
 	subRouter.HandleFunc("/api/traffic/{name}", svr.apiProxyTraffic).Methods("GET")
-	subRouter.HandleFunc("/api/proxies/clearOffline", svr.deleteProxies).Methods("GET")
+	subRouter.HandleFunc("/api/proxies/clearCalcData", svr.deleteProxies).Methods("GET")
 	subRouter.HandleFunc("/api/client/kick", svr.kickClient).Methods("POST")
 
 	// view
@@ -387,7 +387,7 @@ func (svr *Service) apiProxyTraffic(w http.ResponseWriter, r *http.Request) {
 	res.Msg = string(buf)
 }
 
-// GET /api/proxies/clearOffline
+// GET /api/proxies/clearCalcData
 func (svr *Service) deleteProxies(w http.ResponseWriter, r *http.Request) {
 	res := GeneralResponse{Code: 200}
 
@@ -399,8 +399,8 @@ func (svr *Service) deleteProxies(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte(res.Msg))
 		}
 	}()
-	cleared, total := mem.StatsCollector.ClearOfflineProxies()
-	log.Infof("清理 [%d] 个离线隧道, 共 [%d] 个隧道", cleared, total)
+	total := mem.StatsCollector.ClearProxiesCalcData()
+	log.Infof("清除了 [%d] 个隧道的统计数据", total)
 }
 
 // GET /api/client/kick
