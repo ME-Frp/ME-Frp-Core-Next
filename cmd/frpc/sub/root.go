@@ -55,6 +55,7 @@ type ProxyConfigResp struct {
 	ProxyName            string `json:"proxyName"`
 	ProxyType            string `json:"proxyType"`
 	IsBanned             bool   `json:"isBanned"`
+	IsDisabled           bool   `json:"isDisabled"`
 	LocalIp              string `json:"localIp"`
 	LocalPort            int32  `json:"localPort"`
 	RemotePort           int32  `json:"remotePort"`
@@ -333,7 +334,11 @@ func fetchProxyConfig(proxyId string, userToken string) (ProxyConfigResp, error)
 	}
 
 	if proxyResp.Data.IsBanned {
-		return ProxyConfigResp{}, fmt.Errorf("隧道已被封禁")
+		return ProxyConfigResp{}, fmt.Errorf("隧道已被封禁, 请联系管理员")
+	}
+
+	if proxyResp.Data.IsDisabled {
+		return ProxyConfigResp{}, fmt.Errorf("隧道已被禁用, 请在网页端启用")
 	}
 
 	if proxyResp.Data.ProxyType == "" {
