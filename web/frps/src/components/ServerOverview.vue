@@ -3,67 +3,67 @@
     <!-- 左侧信息栏 -->
     <div class="info-section">
       <div class="card-actions">
-        <n-button secondary @click="fetchData" style="margin-right: 12px">
+        <NButton secondary @click="fetchData" style="margin-right: 12px">
           <template #icon>
-            <n-icon><refresh-outline /></n-icon>
+            <NIcon><refresh-outline /></NIcon>
           </template>
           刷新节点信息
-        </n-button>
-        <n-popconfirm
+        </NButton>
+        <NPopconfirm
           @positive-click="handleRestart"
           positive-text="确认"
           negative-text="取消"
         >
           <template #trigger>
-            <n-button type="warning">
+            <NButton type="warning">
               <template #icon>
-                <n-icon><power-outline /></n-icon>
+                <NIcon><power-outline /></NIcon>
               </template>
               重启当前节点服务
-            </n-button>
+            </NButton>
           </template>
           确定要重启当前节点吗？这可能会导致所有隧道短暂中断。
-        </n-popconfirm>
+        </NPopconfirm>
       </div>
-      <n-card title="服务端信息">
-        <n-descriptions :column="1" label-placement="left">
-          <n-descriptions-item label="版本">
+      <NCard title="服务端信息">
+        <NDescriptions :column="1" label-placement="left">
+          <NDescriptionsItem label="版本">
             {{ data.version }}
-          </n-descriptions-item>
-          <n-descriptions-item label="服务端口">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="服务端口">
             {{ data.bindPort }}
-          </n-descriptions-item>
-          <n-descriptions-item v-if="data.kcpBindPort != 0" label="KCP 绑定端口">
+          </NDescriptionsItem>
+          <NDescriptionsItem v-if="data.kcpBindPort != 0" label="KCP 绑定端口">
             {{ data.kcpBindPort }}
-          </n-descriptions-item>
-          <n-descriptions-item label="最大连接池">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="最大连接池">
             {{ data.maxPoolCount }}
-          </n-descriptions-item>
-          <n-descriptions-item label="每客户端最大端口数">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="每客户端最大端口数">
             {{ data.maxPortsPerClient }}
-          </n-descriptions-item>
-          <n-descriptions-item label="端口范围限制">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="端口范围限制">
             {{ data.allowPortsStr }}
-          </n-descriptions-item>
-          <n-descriptions-item label="心跳超时">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="心跳超时">
             {{ data.heartbeatTimeout }}
-          </n-descriptions-item>
-          <n-descriptions-item label="客户端数量">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="客户端数量">
             {{ data.clientCounts }}
-          </n-descriptions-item>
-          <n-descriptions-item label="当前连接数">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="当前连接数">
             {{ data.curConns }}
-          </n-descriptions-item>
-          <n-descriptions-item label="隧道数量">
+          </NDescriptionsItem>
+          <NDescriptionsItem label="隧道数量">
             {{ data.proxyCounts }}
-          </n-descriptions-item>
-        </n-descriptions>
-      </n-card>
+          </NDescriptionsItem>
+        </NDescriptions>
+      </NCard>
     </div>
 
     <!-- 右侧图表区域 -->
     <div class="charts-section">
-      <n-card>
+      <NCard>
         <div class="chart-container">
           <div class="chart-header">
             <div>
@@ -73,8 +73,8 @@
           </div>
           <div ref="trafficRef" class="chart" />
         </div>
-      </n-card>
-      <n-card style="margin-top: 16px">
+      </NCard>
+      <NCard style="margin-top: 16px">
         <div class="chart-container">
           <div class="chart-header">
             <div>
@@ -84,7 +84,7 @@
           </div>
           <div ref="proxiesRef" class="chart" />
         </div>
-      </n-card>
+      </NCard>
     </div>
   </div>
 </template>

@@ -1,11 +1,11 @@
 <template>
-  <n-card class="proxy-card">
+  <NCard class="proxy-card">
     <ProxyView
       :proxies="proxies"
       proxy-type="http"
       @refresh="fetchData"
     />
-  </n-card>
+  </NCard>
 </template>
 
 <script setup lang="ts">

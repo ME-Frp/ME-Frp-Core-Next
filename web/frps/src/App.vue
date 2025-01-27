@@ -1,150 +1,64 @@
 <template>
-  <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
-    <n-message-provider>
-      <n-layout position="absolute">
-        <n-layout-header bordered class="header">
+  <NConfigProvider :theme="theme" :theme-overrides="themeOverrides">
+    <NMessageProvider>
+      <NLayout position="absolute">
+        <NLayoutHeader bordered class="header">
           <div class="header-content">
             <div class="left">
-              <n-popover trigger="click" placement="bottom-start" :show="showMenu" @update:show="showMenu = $event"
+              <NPopover trigger="click" placement="bottom-start" :show="showMenu" @update:show="showMenu = $event"
                 v-if="isMobile">
                 <template #trigger>
-                  <n-button text class="menu-trigger">
-                    <n-icon size="24">
+                  <NButton text class="menu-trigger">
+                    <NIcon size="24">
                       <menu-outline />
-                    </n-icon>
-                  </n-button>
+                    </NIcon>
+                  </NButton>
                 </template>
                 <div class="mobile-menu">
-                  <n-menu 
+                  <NMenu 
                     :value="currentPath" 
                     :options="menuOptions" 
                     :expanded-keys="expandedKeys"
                     @update:value="handleMobileSelect" 
                   />
                 </div>
-              </n-popover>
-              <n-text class="logo">
+              </NPopover>
+              <NText class="logo">
                 ME Frp 镜缘映射 - 服务端
-              </n-text>
+              </NText>
             </div>
             <div class="right">
-              <n-switch v-model:value="darkmodeSwitch" @update:value="toggleDark" :rail-style="railStyle">
+              <NSwitch v-model:value="darkmodeSwitch" @update:value="toggleDark" :rail-style="railStyle">
                 <template #checked>
-                  <n-icon><moon-outline /></n-icon>
+                  <NIcon><moon-outline /></NIcon>
                 </template>
                 <template #unchecked>
-                  <n-icon><sunny-outline /></n-icon>
+                  <NIcon><sunny-outline /></NIcon>
                 </template>
-              </n-switch>
+              </NSwitch>
             </div>
           </div>
-        </n-layout-header>
+        </NLayoutHeader>
 
-        <n-layout has-sider position="absolute" style="top: 64px;">
-          <n-layout-sider v-show="!isMobile" bordered collapse-mode="width" :collapsed-width="64" :width="240"
+        <NLayout has-sider position="absolute" style="top: 64px;">
+          <NLayoutSider v-show="!isMobile" bordered collapse-mode="width" :collapsed-width="64" :width="240"
             :collapsed="isCollapsed" show-trigger :native-scrollbar="false" @collapse="isCollapsed = true"
             @expand="isCollapsed = false">
-            <n-menu :value="currentPath" :options="menuOptions" :expanded-keys="expandedKeys" :collapsed-width="64"
+            <NMenu :value="currentPath" :options="menuOptions" :expanded-keys="expandedKeys" :collapsed-width="64"
               :collapsed-icon-size="24" :icon-size="22" @update:value="handleSelect"
               @update:expanded-keys="handleExpand" />
-          </n-layout-sider>
+          </NLayoutSider>
 
-          <n-layout :native-scrollbar="false">
-            <n-layout-content style="padding: 24px;">
+          <NLayout :native-scrollbar="false">
+            <NLayoutContent style="padding: 24px;">
               <router-view ref="overviewRef" />
-            </n-layout-content>
-          </n-layout>
-        </n-layout>
-      </n-layout>
-    </n-message-provider>
-  </n-config-provider>
+            </NLayoutContent>
+          </NLayout>
+        </NLayout>
+      </NLayout>
+    </NMessageProvider>
+  </NConfigProvider>
 </template>
-
-<style lang="scss" scoped>
-html,
-body,
-#app {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-.header {
-  height: 64px;
-  background: var(--n-color);
-  border-bottom: 1px solid var(--n-border-color);
-  position: relative;
-  z-index: 1;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 64px;
-  padding: 0 24px;
-
-  .left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-}
-
-.logo {
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.menu-trigger {
-  @media (min-width: 769px) {
-    display: none;
-  }
-}
-
-.right {
-  display: flex;
-  align-items: center;
-}
-
-:deep(.n-menu-item-content) {
-  justify-content: flex-start !important;
-}
-
-:deep(.n-menu-item-content-header) {
-  align-items: center;
-}
-
-.n-layout-sider {
-  height: calc(100vh - 64px);
-}
-
-.n-layout-content {
-  min-height: calc(100vh - 64px);
-}
-
-@media (max-width: 700px) {
-  .n-layout-content {
-    padding: 16px !important;
-  }
-}
-
-.mobile-menu {
-  min-width: 200px;
-  margin: -8px -16px;
-  background-color: var(--n-color);
-  border-radius: 3px;
-  box-shadow: var(--n-box-shadow);
-}
-
-:deep(.n-popover) {
-  padding: 0;
-}
-
-:deep(.n-popover-content) {
-  padding: 0;
-}
-</style>
 
 <script setup lang="ts">
 import { themeOverrides } from './constants/theme'
@@ -282,3 +196,89 @@ const railStyle = ({ focused, checked }: { focused: boolean; checked: boolean })
 
 const overviewRef = ref()
 </script>
+
+<style lang="scss" scoped>
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  height: 64px;
+  background: var(--n-color);
+  border-bottom: 1px solid var(--n-border-color);
+  position: relative;
+  z-index: 1;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.menu-trigger {
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.n-menu-item-content) {
+  justify-content: flex-start !important;
+}
+
+:deep(.n-menu-item-content-header) {
+  align-items: center;
+}
+
+.n-layout-sider {
+  height: calc(100vh - 64px);
+}
+
+.n-layout-content {
+  min-height: calc(100vh - 64px);
+}
+
+@media (max-width: 700px) {
+  .n-layout-content {
+    padding: 16px !important;
+  }
+}
+
+.mobile-menu {
+  min-width: 200px;
+  margin: -8px -16px;
+  background-color: var(--n-color);
+  border-radius: 3px;
+  box-shadow: var(--n-box-shadow);
+}
+
+:deep(.NPopover) {
+  padding: 0;
+}
+
+:deep(.NPopover-content) {
+  padding: 0;
+}
+</style>

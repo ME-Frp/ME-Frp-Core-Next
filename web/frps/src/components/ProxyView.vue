@@ -1,25 +1,25 @@
 <template>
   <div>
     <div class="proxy-header">
-      <n-text class="title">
+      <NText class="title">
         {{ proxyType.toUpperCase() }} 隧道
-      </n-text>
-      <n-space>
-        <n-button @click="$emit('refresh')">
+      </NText>
+      <NSpace>
+        <NButton @click="$emit('refresh')">
           <template #icon>
-            <n-icon><refresh-outline /></n-icon>
+            <NIcon><refresh-outline /></NIcon>
           </template>
           刷新
-        </n-button>
-      </n-space>
+        </NButton>
+      </NSpace>
     </div>
 
-    <n-data-table :columns="columns" :data="proxies" :pagination="pagination" :row-key="(row: any) => row.name"
+    <NDataTable :columns="columns" :data="proxies" :pagination="pagination" :row-key="(row: any) => row.name"
       :max-height="null" size="small" class="proxy-table" />
 
-    <n-modal v-model:show="dialogVisible" :title="dialogVisibleName" preset="card" style="width: 700px">
+    <NModal v-model:show="dialogVisible" :title="dialogVisibleName" preset="card" style="width: 700px">
       <Traffic :proxyName="dialogVisibleName" />
-    </n-modal>
+    </NModal>
   </div>
 </template>
 

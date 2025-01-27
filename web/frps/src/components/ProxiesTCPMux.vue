@@ -1,9 +1,9 @@
 <template>
-  <n-card>
-    <n-message-provider>
+  <NCard>
+    <NMessageProvider>
       <ProxyView :proxies="proxies" proxyType="tcpmux" @refresh="fetchData"/>
-    </n-message-provider>
-  </n-card>
+    </NMessageProvider>
+  </NCard>
 </template>
 
 <script setup lang="ts">
