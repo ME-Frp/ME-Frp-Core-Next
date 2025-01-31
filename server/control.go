@@ -399,7 +399,7 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		xl.Warnf("用户 Token 为空")
 		_ = ctl.msgDispatcher.Send(&msg.NewProxyResp{
 			ProxyName: inMsg.ProxyName,
-			Error:     "用户 Token 为空，请检查配置",
+			Error:     "用户 Token 为空, 请检查配置",
 		})
 		return
 	}
@@ -458,14 +458,12 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		xl.Errorf("获取带宽限制失败: %v", err)
 	} else {
 		if apiResp.Data.OutBound > 0 || apiResp.Data.InBound > 0 {
-			outBoundMB := apiResp.Data.OutBound / (1024 * 1024)
-			inBoundMB := apiResp.Data.InBound / (1024 * 1024)
-			if outBoundMB > 0 && inBoundMB > 0 {
-				inMsg.BandwidthLimit = fmt.Sprintf("%dMB %dMB", inBoundMB, outBoundMB)
-			} else if outBoundMB > 0 {
-				inMsg.BandwidthLimit = fmt.Sprintf("%dMB", outBoundMB)
-			} else if inBoundMB > 0 {
-				inMsg.BandwidthLimit = fmt.Sprintf("%dMB", inBoundMB)
+			if apiResp.Data.OutBound > 0 && apiResp.Data.InBound > 0 {
+				inMsg.BandwidthLimit = fmt.Sprintf("%dKB %dKB", apiResp.Data.InBound, apiResp.Data.OutBound)
+			} else if apiResp.Data.OutBound > 0 {
+				inMsg.BandwidthLimit = fmt.Sprintf("%dKB", apiResp.Data.OutBound)
+			} else if apiResp.Data.InBound > 0 {
+				inMsg.BandwidthLimit = fmt.Sprintf("%dKB", apiResp.Data.InBound)
 			}
 			inMsg.BandwidthLimitMode = "client"
 			_ = ctl.msgDispatcher.Send(&msg.GetProxyBandwidthLimitResp{

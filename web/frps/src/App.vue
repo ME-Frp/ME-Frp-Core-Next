@@ -24,7 +24,7 @@
                 </div>
               </NPopover>
               <NText class="logo">
-                ME Frp 镜缘映射 - 服务端
+                ME Frp 幻缘映射 - 服务端
               </NText>
             </div>
             <div class="right">
@@ -98,7 +98,7 @@ const toggleDark = (value: boolean) => {
 
 const currentPath = computed(() => route.path)
 
-// 监听路由变化，保持菜单展开
+// 监听路由变化, 保持菜单展开
 watch(
   () => route.path,
   () => {

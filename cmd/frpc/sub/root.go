@@ -207,7 +207,7 @@ func startService(
 
 func runEasyStartup() error {
 	if userToken == "" || proxyId == "" {
-		return fmt.Errorf("使用快捷启动时，用户Token 和 隧道Id 都是必需的")
+		return fmt.Errorf("使用快捷启动时, 用户Token 和 隧道Id 都是必需的")
 	}
 
 	// 获取所有隧道配置
@@ -342,7 +342,7 @@ func fetchProxyConfig(proxyId string, userToken string) (ProxyConfigResp, error)
 	}
 
 	if proxyResp.Data.ProxyType == "" {
-		return ProxyConfigResp{}, fmt.Errorf("隧道类型为空，请检查隧道是否存在")
+		return ProxyConfigResp{}, fmt.Errorf("隧道类型为空, 请检查隧道是否存在")
 	}
 
 	if proxyResp.Data.NodeAddr == "" {

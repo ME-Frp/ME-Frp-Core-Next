@@ -269,7 +269,7 @@ func (svr *Service) loopLoginUntilSuccess(maxInterval time.Duration, firstLoginE
 	loginFunc := func() (bool, error) {
 		logInfo := "尝试连接到节点..."
 		if !firstLoginExit {
-			logInfo = "与节点断开连接，尝试重新连接..."
+			logInfo = "与节点断开连接, 尝试重新连接..."
 		}
 		xl.Infof(logInfo)
 		conn, connector, err := svr.login()

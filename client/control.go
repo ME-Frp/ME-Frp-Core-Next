@@ -167,7 +167,7 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 	} else {
 		cfg, ok := ctl.pm.GetProxyConfig(inMsg.ProxyName)
 		if !ok {
-			xl.Warnf("内部错误：隧道 [%s] 未找到，您可以继续使用本隧道", inMsg.ProxyName)
+			xl.Warnf("内部错误：隧道 [%s] 未找到, 您可以继续使用本隧道", inMsg.ProxyName)
 		}
 		proxyType := cfg.GetBaseConfig().Type
 		if proxyType != "http" && proxyType != "https" {
