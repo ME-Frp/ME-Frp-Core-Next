@@ -34,25 +34,25 @@ for os in $os_all; do
             frp_path="./packages/${frp_version}_${suffix}"
 
             if [ "x${os}" = x"windows" ]; then
-                if [ ! -f "./frpc_${os}_${arch}.exe" ]; then
+                if [ ! -f "./mefrpc_${os}_${arch}.exe" ]; then
                     continue
                 fi
-                if [ ! -f "./frps_${os}_${arch}.exe" ]; then
+                if [ ! -f "./mefrps_${os}_${arch}.exe" ]; then
                     continue
                 fi
                 mkdir ${frp_path}
-                mv ./frpc_${os}_${arch}.exe ${frp_path}/frpc.exe
-                mv ./frps_${os}_${arch}.exe ${frp_path}/frps.exe
+                mv ./mefrpc_${os}_${arch}.exe ${frp_path}/mefrpc_${os}_${arch}.exe
+                mv ./mefrps_${os}_${arch}.exe ${frp_path}/mefrps_${os}_${arch}.exe
             else
-                if [ ! -f "./frpc_${suffix}" ]; then
+                if [ ! -f "./mefrpc_${suffix}" ]; then
                     continue
                 fi
-                if [ ! -f "./frps_${suffix}" ]; then
+                if [ ! -f "./mefrps_${suffix}" ]; then
                     continue
                 fi
                 mkdir ${frp_path}
-                mv ./frpc_${suffix} ${frp_path}/frpc
-                mv ./frps_${suffix} ${frp_path}/frps
+                mv ./mefrpc_${suffix} ${frp_path}/frpc
+                mv ./mefrps_${suffix} ${frp_path}/frps
             fi  
             cp ../LICENSE ${frp_path}
             cp -f ../conf/frpc.toml ${frp_path}

@@ -12,9 +12,9 @@ env:
 # compile assets into binary file
 file:
 	rm -rf ./assets/frps/static/*
-	rm -rf ./assets/frpc/static/*
+	# rm -rf ./assets/frpc/static/*
 	cp -rf ./web/frps/dist/* ./assets/frps/static
-	cp -rf ./web/frpc/dist/* ./assets/frpc/static
+	# cp -rf ./web/frpc/dist/* ./assets/frpc/static
 
 fmt:
 	go fmt ./...
