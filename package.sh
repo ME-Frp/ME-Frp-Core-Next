@@ -8,6 +8,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Get version
+raw_version=`./bin/mefrps --version`
+frp_version=`echo $raw_version | sed 's/MEFrp_//g'`
+echo "build version: $frp_version"
+
 # cross_compiles
 make -f ./Makefile.cross-compiles
 
@@ -29,39 +34,22 @@ for os in $os_all; do
             fi
             
             if [ "x${os}" = x"windows" ]; then
-                if [ -f "./mefrpc_${os}_${arch}.exe" ]; then
-                    mv "./mefrpc_${os}_${arch}.exe" "./packages/mefrpc_${os}_${arch}.exe"
+                if [ -f "./mefrpc_${suffix}.exe" ]; then
+                    mv "./mefrpc_${suffix}.exe" "./packages/mefrpc_${suffix}_${frp_version}.exe"
                 fi
-                if [ -f "./mefrps_${os}_${arch}.exe" ]; then
-                    mv "./mefrps_${os}_${arch}.exe" "./packages/mefrps_${os}_${arch}.exe"
+                if [ -f "./mefrps_${suffix}.exe" ]; then
+                    mv "./mefrps_${suffix}.exe" "./packages/mefrps_${suffix}_${frp_version}.exe"
                 fi
             else
                 if [ -f "./mefrpc_${suffix}" ]; then
-                    mv "./mefrpc_${suffix}" "./packages/mefrpc_${suffix}"
+                    mv "./mefrpc_${suffix}" "./packages/mefrpc_${suffix}_${frp_version}"
                 fi
                 if [ -f "./mefrps_${suffix}" ]; then
-                    mv "./mefrps_${suffix}" "./packages/mefrps_${suffix}"
+                    mv "./mefrps_${suffix}" "./packages/mefrps_${suffix}_${frp_version}"
                 fi
             fi
         done
     done
-done
-
-# Get version and rename files with version at the end
-cd packages
-raw_version=`./bin/mefrpc --version`
-frp_version=`echo $raw_version | sed 's/MEFrp_//g'`
-echo "build version: $frp_version"
-
-for file in *; do
-    if [ -f "$file" ]; then
-        if [[ "$file" == *.exe ]]; then
-            base_name="${file%.exe}"
-            mv "$file" "${base_name}_${frp_version}.exe"
-        else
-            mv "$file" "${file}_${frp_version}"
-        fi
-    fi
 done
 
 cd -
