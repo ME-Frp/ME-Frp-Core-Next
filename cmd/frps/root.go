@@ -46,7 +46,7 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "frps",
+	Use:   "mefrps",
 	Short: "ME Frp 服务端",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if showVersion {

@@ -51,18 +51,18 @@ func (sv *SUDPVisitor) Run() (err error) {
 
 	addr, err := net.ResolveUDPAddr("udp", net.JoinHostPort(sv.cfg.BindAddr, strconv.Itoa(sv.cfg.BindPort)))
 	if err != nil {
-		return fmt.Errorf("SUDP ResolveUDPAddr 错误: %v", err)
+		return fmt.Errorf("SUDP ResolveUDPAddr 失败: %v", err)
 	}
 
 	sv.udpConn, err = net.ListenUDP("udp", addr)
 	if err != nil {
-		return fmt.Errorf("SUDP 监听 UDP 端口 %s 错误: %v", addr.String(), err)
+		return fmt.Errorf("SUDP 监听 UDP 端口 [%s] 失败: %v", addr.String(), err)
 	}
 
 	sv.sendCh = make(chan *msg.UDPPacket, 1024)
 	sv.readCh = make(chan *msg.UDPPacket, 1024)
 
-	xl.Infof("SUDP 开始工作, 监听于 %s", addr)
+	xl.Infof("SUDP 开始工作, 监听于 [%s]", addr)
 
 	go sv.dispatcher()
 	go udp.ForwardUserConn(sv.udpConn, sv.readCh, sv.sendCh, int(sv.clientCfg.UDPPacketSize))
@@ -84,17 +84,17 @@ func (sv *SUDPVisitor) dispatcher() {
 		select {
 		case firstPacket = <-sv.sendCh:
 			if firstPacket == nil {
-				xl.Infof("SUDP 用户隧道已关闭")
+				xl.Infof("SUDP 访问者隧道已关闭")
 				return
 			}
 		case <-sv.checkCloseCh:
-			xl.Infof("SUDP 用户隧道已关闭")
+			xl.Infof("SUDP 访问者隧道已关闭")
 			return
 		}
 
 		visitorConn, err = sv.getNewVisitorConn()
 		if err != nil {
-			xl.Warnf("连接到 ME Frp 节点错误: %v, 尝试重新连接", err)
+			xl.Warnf("发送 newVisitorConn 到节点失败: %v, 尝试重新连接", err)
 			continue
 		}
 
@@ -111,7 +111,7 @@ func (sv *SUDPVisitor) dispatcher() {
 
 func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 	xl := xlog.FromContextSafe(sv.ctx)
-	xl.Debugf("启动 SUDP 隧道工作")
+	xl.Debugf("启动 SUDP 隧道工作器")
 
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -134,21 +134,21 @@ func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 			// frpc will send heartbeat in workConn to frpc visitor for keeping alive
 			_ = conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 			if rawMsg, errRet = msg.ReadMsg(conn); errRet != nil {
-				xl.Warnf("从工作连接读取用户 UDP 连接错误: %v", errRet)
+				xl.Warnf("从工作连接读取用户 UDP 连接失败: %v", errRet)
 				return
 			}
 
 			_ = conn.SetReadDeadline(time.Time{})
 			switch m := rawMsg.(type) {
 			case *msg.Ping:
-				xl.Debugf("SUDP 用户隧道收到 Ping 消息")
+				xl.Debugf("SUDP 访问者客户端收到 Ping 消息")
 				continue
 			case *msg.UDPPacket:
 				if errRet := errors.PanicToError(func() {
 					sv.readCh <- m
-					xl.Tracef("SUDP 用户隧道从工作连接收到 UDP 包: %s", m.Content)
+					xl.Tracef("SUDP 访问者隧道从工作连接收到 UDP 包: %s", m.Content)
 				}); errRet != nil {
-					xl.Infof("SUDP 用户隧道工作连接读取器已关闭")
+					xl.Infof("UDP 工作连接读取线程已关闭")
 					return
 				}
 			}
@@ -194,14 +194,14 @@ func (sv *SUDPVisitor) worker(workConn net.Conn, firstPacket *msg.UDPPacket) {
 	go workConnSenderFn(workConn)
 
 	wg.Wait()
-	xl.Infof("SUDP 隧道工作已关闭")
+	xl.Infof("SUDP 隧道工作器已关闭")
 }
 
 func (sv *SUDPVisitor) getNewVisitorConn() (net.Conn, error) {
 	xl := xlog.FromContextSafe(sv.ctx)
 	visitorConn, err := sv.helper.ConnectServer()
 	if err != nil {
-		return nil, fmt.Errorf("SUDP 连接到 ME Frp 节点错误: %v", err)
+		return nil, fmt.Errorf("连接到节点失败: %v", err)
 	}
 
 	now := time.Now().Unix()
@@ -215,19 +215,19 @@ func (sv *SUDPVisitor) getNewVisitorConn() (net.Conn, error) {
 	}
 	err = msg.WriteMsg(visitorConn, newVisitorConnMsg)
 	if err != nil {
-		return nil, fmt.Errorf("SUDP 发送 newVisitorConnMsg 到 ME Frp 节点错误: %v", err)
+		return nil, fmt.Errorf("发送 newVisitorConn 到节点失败: %v", err)
 	}
 
 	var newVisitorConnRespMsg msg.NewVisitorConnResp
 	_ = visitorConn.SetReadDeadline(time.Now().Add(10 * time.Second))
 	err = msg.ReadMsgInto(visitorConn, &newVisitorConnRespMsg)
 	if err != nil {
-		return nil, fmt.Errorf("SUDP 读取 newVisitorConnRespMsg 错误: %v", err)
+		return nil, fmt.Errorf("读取 newVisitorConnResp 失败: %v", err)
 	}
 	_ = visitorConn.SetReadDeadline(time.Time{})
 
 	if newVisitorConnRespMsg.Error != "" {
-		return nil, fmt.Errorf("启动新的用户连接错误: %s", newVisitorConnRespMsg.Error)
+		return nil, fmt.Errorf("启动新的访问者连接失败: %s", newVisitorConnRespMsg.Error)
 	}
 
 	var remote io.ReadWriteCloser
@@ -235,7 +235,7 @@ func (sv *SUDPVisitor) getNewVisitorConn() (net.Conn, error) {
 	if sv.cfg.Transport.UseEncryption {
 		remote, err = libio.WithEncryption(remote, []byte(sv.cfg.SecretKey))
 		if err != nil {
-			xl.Errorf("创建加密流错误: %v", err)
+			xl.Errorf("创建加密流失败: %v", err)
 			return nil, err
 		}
 	}

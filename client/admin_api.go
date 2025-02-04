@@ -14,115 +14,100 @@
 
 package client
 
-import (
-	"cmp"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net"
-	"net/http"
-	"os"
-	"slices"
-	"strconv"
-	"time"
-
-	"github.com/fatedier/frp/client/proxy"
-	"github.com/fatedier/frp/pkg/config"
-	"github.com/fatedier/frp/pkg/config/v1/validation"
-	httppkg "github.com/fatedier/frp/pkg/util/http"
-	"github.com/fatedier/frp/pkg/util/log"
-	// netpkg "github.com/fatedier/frp/pkg/util/net"
-)
+// import (
+// 	httppkg "github.com/fatedier/frp/pkg/util/http"
+// 	// netpkg "github.com/fatedier/frp/pkg/util/net"
+// )
 
 type GeneralResponse struct {
 	Code int
 	Msg  string
 }
 
-func (svr *Service) registerRouteHandlers(helper *httppkg.RouterRegisterHelper) {
-	// helper.Router.HandleFunc("/healthz", svr.healthz)
-	// subRouter := helper.Router.NewRoute().Subrouter()
+// func (svr *Service) registerRouteHandlers(helper *httppkg.RouterRegisterHelper) {
+// helper.Router.HandleFunc("/healthz", svr.healthz)
+// subRouter := helper.Router.NewRoute().Subrouter()
 
-	// subRouter.Use(helper.AuthMiddleware.Middleware)
+// subRouter.Use(helper.AuthMiddleware.Middleware)
 
-	// api, see admin_api.go
-	// subRouter.HandleFunc("/api/reload", svr.apiReload).Methods("GET")
-	// subRouter.HandleFunc("/api/stop", svr.apiStop).Methods("POST")
-	// subRouter.HandleFunc("/api/status", svr.apiStatus).Methods("GET")
-	// subRouter.HandleFunc("/api/config", svr.apiGetConfig).Methods("GET")
-	// subRouter.HandleFunc("/api/config", svr.apiPutConfig).Methods("PUT")
+// api, see admin_api.go
+// subRouter.HandleFunc("/api/reload", svr.apiReload).Methods("GET")
+// subRouter.HandleFunc("/api/stop", svr.apiStop).Methods("POST")
+// subRouter.HandleFunc("/api/status", svr.apiStatus).Methods("GET")
+// subRouter.HandleFunc("/api/config", svr.apiGetConfig).Methods("GET")
+// subRouter.HandleFunc("/api/config", svr.apiPutConfig).Methods("PUT")
 
-	// // view
-	// subRouter.Handle("/favicon.ico", http.FileServer(helper.AssetsFS)).Methods("GET")
-	// subRouter.PathPrefix("/static/").Handler(
-	// 	netpkg.MakeHTTPGzipHandler(http.StripPrefix("/static/", http.FileServer(helper.AssetsFS))),
-	// ).Methods("GET")
-	// subRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	http.Redirect(w, r, "/static/", http.StatusMovedPermanently)
-	// })
-}
+// // view
+// subRouter.Handle("/favicon.ico", http.FileServer(helper.AssetsFS)).Methods("GET")
+// subRouter.PathPrefix("/static/").Handler(
+// 	netpkg.MakeHTTPGzipHandler(http.StripPrefix("/static/", http.FileServer(helper.AssetsFS))),
+// ).Methods("GET")
+// subRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+// 	http.Redirect(w, r, "/static/", http.StatusMovedPermanently)
+// })
+// }
 
 // /healthz
-func (svr *Service) healthz(w http.ResponseWriter, _ *http.Request) {
-	w.WriteHeader(200)
-}
+// func (svr *Service) healthz(w http.ResponseWriter, _ *http.Request) {
+// 	w.WriteHeader(200)
+// }
 
-// GET /api/reload
-func (svr *Service) apiReload(w http.ResponseWriter, r *http.Request) {
-	res := GeneralResponse{Code: 200}
-	strictConfigMode := false
-	strictStr := r.URL.Query().Get("strictConfig")
-	if strictStr != "" {
-		strictConfigMode, _ = strconv.ParseBool(strictStr)
-	}
+// // GET /api/reload
+// func (svr *Service) apiReload(w http.ResponseWriter, r *http.Request) {
+// 	res := GeneralResponse{Code: 200}
+// 	strictConfigMode := false
+// 	strictStr := r.URL.Query().Get("strictConfig")
+// 	if strictStr != "" {
+// 		strictConfigMode, _ = strconv.ParseBool(strictStr)
+// 	}
 
-	log.Infof("API 请求 [/api/reload]")
-	defer func() {
-		log.Infof("API 响应 [/api/reload], 状态码 [%d]", res.Code)
-		w.WriteHeader(res.Code)
-		if len(res.Msg) > 0 {
-			_, _ = w.Write([]byte(res.Msg))
-		}
-	}()
+// 	log.Infof("API 请求 [/api/reload]")
+// 	defer func() {
+// 		log.Infof("API 响应 [/api/reload], 状态码 [%d]", res.Code)
+// 		w.WriteHeader(res.Code)
+// 		if len(res.Msg) > 0 {
+// 			_, _ = w.Write([]byte(res.Msg))
+// 		}
+// 	}()
 
-	cliCfg, proxyCfgs, visitorCfgs, _, err := config.LoadClientConfig(svr.configFilePath, strictConfigMode)
-	if err != nil {
-		res.Code = 400
-		res.Msg = err.Error()
-		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
-		return
-	}
-	if _, err := validation.ValidateAllClientConfig(cliCfg, proxyCfgs, visitorCfgs); err != nil {
-		res.Code = 400
-		res.Msg = err.Error()
-		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
-		return
-	}
+// 	cliCfg, proxyCfgs, visitorCfgs, _, err := config.LoadClientConfig(svr.configFilePath, strictConfigMode)
+// 	if err != nil {
+// 		res.Code = 400
+// 		res.Msg = err.Error()
+// 		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
+// 		return
+// 	}
+// 	if _, err := validation.ValidateAllClientConfig(cliCfg, proxyCfgs, visitorCfgs); err != nil {
+// 		res.Code = 400
+// 		res.Msg = err.Error()
+// 		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
+// 		return
+// 	}
 
-	if err := svr.UpdateAllConfigurer(proxyCfgs, visitorCfgs); err != nil {
-		res.Code = 500
-		res.Msg = err.Error()
-		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
-		return
-	}
-	log.Infof("成功重新加载配置")
-}
+// 	if err := svr.UpdateAllConfigurer(proxyCfgs, visitorCfgs); err != nil {
+// 		res.Code = 500
+// 		res.Msg = err.Error()
+// 		log.Warnf("重新加载 ME Frp 客户端隧道配置错误: %s", res.Msg)
+// 		return
+// 	}
+// 	log.Infof("成功重新加载配置")
+// }
 
-// POST /api/stop
-func (svr *Service) apiStop(w http.ResponseWriter, _ *http.Request) {
-	res := GeneralResponse{Code: 200}
+// // POST /api/stop
+// func (svr *Service) apiStop(w http.ResponseWriter, _ *http.Request) {
+// 	res := GeneralResponse{Code: 200}
 
-	log.Infof("API 请求 [/api/stop]")
-	defer func() {
-		log.Infof("API 响应 [/api/stop], 状态码 [%d]", res.Code)
-		w.WriteHeader(res.Code)
-		if len(res.Msg) > 0 {
-			_, _ = w.Write([]byte(res.Msg))
-		}
-	}()
+// 	log.Infof("API 请求 [/api/stop]")
+// 	defer func() {
+// 		log.Infof("API 响应 [/api/stop], 状态码 [%d]", res.Code)
+// 		w.WriteHeader(res.Code)
+// 		if len(res.Msg) > 0 {
+// 			_, _ = w.Write([]byte(res.Msg))
+// 		}
+// 	}()
 
-	go svr.GracefulClose(100 * time.Millisecond)
-}
+// 	go svr.GracefulClose(100 * time.Millisecond)
+// }
 
 type StatusResp map[string][]ProxyStatusResp
 
@@ -136,127 +121,127 @@ type ProxyStatusResp struct {
 	RemoteAddr string `json:"remote_addr"`
 }
 
-func NewProxyStatusResp(status *proxy.WorkingStatus, serverAddr string) ProxyStatusResp {
-	psr := ProxyStatusResp{
-		Name:   status.Name,
-		Type:   status.Type,
-		Status: status.Phase,
-		Err:    status.Err,
-	}
-	baseCfg := status.Cfg.GetBaseConfig()
-	if baseCfg.LocalPort != 0 {
-		psr.LocalAddr = net.JoinHostPort(baseCfg.LocalIP, strconv.Itoa(baseCfg.LocalPort))
-	}
-	psr.Plugin = baseCfg.Plugin.Type
+// func NewProxyStatusResp(status *proxy.WorkingStatus, serverAddr string) ProxyStatusResp {
+// 	psr := ProxyStatusResp{
+// 		Name:   status.Name,
+// 		Type:   status.Type,
+// 		Status: status.Phase,
+// 		Err:    status.Err,
+// 	}
+// 	baseCfg := status.Cfg.GetBaseConfig()
+// 	if baseCfg.LocalPort != 0 {
+// 		psr.LocalAddr = net.JoinHostPort(baseCfg.LocalIP, strconv.Itoa(baseCfg.LocalPort))
+// 	}
+// 	psr.Plugin = baseCfg.Plugin.Type
 
-	if status.Err == "" {
-		psr.RemoteAddr = status.RemoteAddr
-		if slices.Contains([]string{"tcp", "udp"}, status.Type) {
-			psr.RemoteAddr = serverAddr + psr.RemoteAddr
-		}
-	}
-	return psr
-}
+// 	if status.Err == "" {
+// 		psr.RemoteAddr = status.RemoteAddr
+// 		if slices.Contains([]string{"tcp", "udp"}, status.Type) {
+// 			psr.RemoteAddr = serverAddr + psr.RemoteAddr
+// 		}
+// 	}
+// 	return psr
+// }
 
-// GET /api/status
-func (svr *Service) apiStatus(w http.ResponseWriter, _ *http.Request) {
-	var (
-		buf []byte
-		res StatusResp = make(map[string][]ProxyStatusResp)
-	)
+// // GET /api/status
+// func (svr *Service) apiStatus(w http.ResponseWriter, _ *http.Request) {
+// 	var (
+// 		buf []byte
+// 		res StatusResp = make(map[string][]ProxyStatusResp)
+// 	)
 
-	log.Infof("HTTP 请求 [/api/status]")
-	defer func() {
-		log.Infof("HTTP 响应 [/api/status]")
-		buf, _ = json.Marshal(&res)
-		_, _ = w.Write(buf)
-	}()
+// 	log.Infof("HTTP 请求 [/api/status]")
+// 	defer func() {
+// 		log.Infof("HTTP 响应 [/api/status]")
+// 		buf, _ = json.Marshal(&res)
+// 		_, _ = w.Write(buf)
+// 	}()
 
-	svr.ctlMu.RLock()
-	ctl := svr.ctl
-	svr.ctlMu.RUnlock()
-	if ctl == nil {
-		return
-	}
+// 	svr.ctlMu.RLock()
+// 	ctl := svr.ctl
+// 	svr.ctlMu.RUnlock()
+// 	if ctl == nil {
+// 		return
+// 	}
 
-	ps := ctl.pm.GetAllProxyStatus()
-	for _, status := range ps {
-		res[status.Type] = append(res[status.Type], NewProxyStatusResp(status, svr.common.ServerAddr))
-	}
+// 	ps := ctl.pm.GetAllProxyStatus()
+// 	for _, status := range ps {
+// 		res[status.Type] = append(res[status.Type], NewProxyStatusResp(status, svr.common.ServerAddr))
+// 	}
 
-	for _, arrs := range res {
-		if len(arrs) <= 1 {
-			continue
-		}
-		slices.SortFunc(arrs, func(a, b ProxyStatusResp) int {
-			return cmp.Compare(a.Name, b.Name)
-		})
-	}
-}
+// 	for _, arrs := range res {
+// 		if len(arrs) <= 1 {
+// 			continue
+// 		}
+// 		slices.SortFunc(arrs, func(a, b ProxyStatusResp) int {
+// 			return cmp.Compare(a.Name, b.Name)
+// 		})
+// 	}
+// }
 
-// GET /api/config
-func (svr *Service) apiGetConfig(w http.ResponseWriter, _ *http.Request) {
-	res := GeneralResponse{Code: 200}
+// // GET /api/config
+// func (svr *Service) apiGetConfig(w http.ResponseWriter, _ *http.Request) {
+// 	res := GeneralResponse{Code: 200}
 
-	log.Infof("HTTP 获取请求 [/api/config]")
-	defer func() {
-		log.Infof("HTTP 获取响应 [/api/config], 状态码 [%d]", res.Code)
-		w.WriteHeader(res.Code)
-		if len(res.Msg) > 0 {
-			_, _ = w.Write([]byte(res.Msg))
-		}
-	}()
+// 	log.Infof("HTTP 获取请求 [/api/config]")
+// 	defer func() {
+// 		log.Infof("HTTP 获取响应 [/api/config], 状态码 [%d]", res.Code)
+// 		w.WriteHeader(res.Code)
+// 		if len(res.Msg) > 0 {
+// 			_, _ = w.Write([]byte(res.Msg))
+// 		}
+// 	}()
 
-	if svr.configFilePath == "" {
-		res.Code = 400
-		res.Msg = "未配置 ME Frp 客户端配置文件路径"
-		log.Warnf("%s", res.Msg)
-		return
-	}
+// 	if svr.configFilePath == "" {
+// 		res.Code = 400
+// 		res.Msg = "未配置 ME Frp 客户端配置文件路径"
+// 		log.Warnf("%s", res.Msg)
+// 		return
+// 	}
 
-	content, err := os.ReadFile(svr.configFilePath)
-	if err != nil {
-		res.Code = 400
-		res.Msg = err.Error()
-		log.Warnf("加载 ME Frp 客户端配置文件错误: %s", res.Msg)
-		return
-	}
-	res.Msg = string(content)
-}
+// 	content, err := os.ReadFile(svr.configFilePath)
+// 	if err != nil {
+// 		res.Code = 400
+// 		res.Msg = err.Error()
+// 		log.Warnf("加载 ME Frp 客户端配置文件错误: %s", res.Msg)
+// 		return
+// 	}
+// 	res.Msg = string(content)
+// }
 
-// PUT /api/config
-func (svr *Service) apiPutConfig(w http.ResponseWriter, r *http.Request) {
-	res := GeneralResponse{Code: 200}
+// // PUT /api/config
+// func (svr *Service) apiPutConfig(w http.ResponseWriter, r *http.Request) {
+// 	res := GeneralResponse{Code: 200}
 
-	log.Infof("HTTP PUT 请求 [/api/config]")
-	defer func() {
-		log.Infof("HTTP PUT 响应 [/api/config], 状态码 [%d]", res.Code)
-		w.WriteHeader(res.Code)
-		if len(res.Msg) > 0 {
-			_, _ = w.Write([]byte(res.Msg))
-		}
-	}()
+// 	log.Infof("HTTP PUT 请求 [/api/config]")
+// 	defer func() {
+// 		log.Infof("HTTP PUT 响应 [/api/config], 状态码 [%d]", res.Code)
+// 		w.WriteHeader(res.Code)
+// 		if len(res.Msg) > 0 {
+// 			_, _ = w.Write([]byte(res.Msg))
+// 		}
+// 	}()
 
-	// get new config content
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		res.Code = 400
-		res.Msg = fmt.Sprintf("读取请求体错误: %v", err)
-		log.Warnf("%s", res.Msg)
-		return
-	}
+// 	// get new config content
+// 	body, err := io.ReadAll(r.Body)
+// 	if err != nil {
+// 		res.Code = 400
+// 		res.Msg = fmt.Sprintf("读取请求体错误: %v", err)
+// 		log.Warnf("%s", res.Msg)
+// 		return
+// 	}
 
-	if len(body) == 0 {
-		res.Code = 400
-		res.Msg = "请求体不能为空"
-		log.Warnf("%s", res.Msg)
-		return
-	}
+// 	if len(body) == 0 {
+// 		res.Code = 400
+// 		res.Msg = "请求体不能为空"
+// 		log.Warnf("%s", res.Msg)
+// 		return
+// 	}
 
-	if err := os.WriteFile(svr.configFilePath, body, 0o600); err != nil {
-		res.Code = 500
-		res.Msg = fmt.Sprintf("写入 ME Frp 客户端配置文件错误: %v", err)
-		log.Warnf("%s", res.Msg)
-		return
-	}
-}
+// 	if err := os.WriteFile(svr.configFilePath, body, 0o600); err != nil {
+// 		res.Code = 500
+// 		res.Msg = fmt.Sprintf("写入 ME Frp 客户端配置文件错误: %v", err)
+// 		log.Warnf("%s", res.Msg)
+// 		return
+// 	}
+// }

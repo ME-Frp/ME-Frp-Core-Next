@@ -8,9 +8,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-frp_version=`./bin/frps --version`
-echo "build version: $frp_version"
-
 # cross_compiles
 make -f ./Makefile.cross-compiles
 
@@ -18,7 +15,7 @@ rm -rf ./release/packages
 mkdir -p ./release/packages
 
 os_all='linux windows darwin freebsd android'
-arch_all='386 amd64 arm arm64 mips64 mips64le mips mipsle riscv64 loong64'
+arch_all='386 amd64 arm arm64 mips64 mips64le mips mipsle riscv64 loong64 s390x'
 extra_all='_ hf'
 
 cd ./release
@@ -30,45 +27,41 @@ for os in $os_all; do
             if [ "x${extra}" != x"_" ]; then
                 suffix="${os}_${arch}_${extra}"
             fi
-            frp_dir_name="${frp_version}_${suffix}"
-            frp_path="./packages/${frp_version}_${suffix}"
-
+            
             if [ "x${os}" = x"windows" ]; then
-                if [ ! -f "./mefrpc_${os}_${arch}.exe" ]; then
-                    continue
+                if [ -f "./mefrpc_${os}_${arch}.exe" ]; then
+                    mv "./mefrpc_${os}_${arch}.exe" "./packages/mefrpc_${os}_${arch}.exe"
                 fi
-                if [ ! -f "./mefrps_${os}_${arch}.exe" ]; then
-                    continue
+                if [ -f "./mefrps_${os}_${arch}.exe" ]; then
+                    mv "./mefrps_${os}_${arch}.exe" "./packages/mefrps_${os}_${arch}.exe"
                 fi
-                mkdir ${frp_path}
-                mv ./mefrpc_${os}_${arch}.exe ${frp_path}/mefrpc_${os}_${arch}.exe
-                mv ./mefrps_${os}_${arch}.exe ${frp_path}/mefrps_${os}_${arch}.exe
             else
-                if [ ! -f "./mefrpc_${suffix}" ]; then
-                    continue
+                if [ -f "./mefrpc_${suffix}" ]; then
+                    mv "./mefrpc_${suffix}" "./packages/mefrpc_${suffix}"
                 fi
-                if [ ! -f "./mefrps_${suffix}" ]; then
-                    continue
+                if [ -f "./mefrps_${suffix}" ]; then
+                    mv "./mefrps_${suffix}" "./packages/mefrps_${suffix}"
                 fi
-                mkdir ${frp_path}
-                mv ./mefrpc_${suffix} ${frp_path}/frpc
-                mv ./mefrps_${suffix} ${frp_path}/frps
-            fi  
-            cp ../LICENSE ${frp_path}
-            cp -f ../conf/frpc.toml ${frp_path}
-            cp -f ../conf/frps.toml ${frp_path}
-
-            # packages
-            cd ./packages
-            if [ "x${os}" = x"windows" ]; then
-                zip -rq ${frp_dir_name}.zip ${frp_dir_name}
-            else
-                tar -zcf ${frp_dir_name}.tar.gz ${frp_dir_name}
-            fi  
-            cd ..
-            rm -rf ${frp_path}
+            fi
         done
     done
+done
+
+# Get version and rename files with version at the end
+cd packages
+raw_version=`./bin/mefrpc --version`
+frp_version=`echo $raw_version | sed 's/MEFrp_//g'`
+echo "build version: $frp_version"
+
+for file in *; do
+    if [ -f "$file" ]; then
+        if [[ "$file" == *.exe ]]; then
+            base_name="${file%.exe}"
+            mv "$file" "${base_name}_${frp_version}.exe"
+        else
+            mv "$file" "${file}_${frp_version}"
+        fi
+    fi
 done
 
 cd -

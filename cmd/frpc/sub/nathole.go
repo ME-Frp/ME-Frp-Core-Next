@@ -34,8 +34,8 @@ func init() {
 	rootCmd.AddCommand(natholeCmd)
 	natholeCmd.AddCommand(natholeDiscoveryCmd)
 
-	natholeCmd.PersistentFlags().StringVarP(&natHoleSTUNServer, "nat_hole_stun_server", "", "", "STUN server address for nathole")
-	natholeCmd.PersistentFlags().StringVarP(&natHoleLocalAddr, "nat_hole_local_addr", "l", "", "local address to connect STUN server")
+	natholeCmd.PersistentFlags().StringVarP(&natHoleSTUNServer, "nat_hole_stun_server", "", "", "STUN 服务器地址")
+	natholeCmd.PersistentFlags().StringVarP(&natHoleLocalAddr, "nat_hole_local_addr", "l", "", "连接 STUN 服务器的本地地址")
 }
 
 var natholeCmd = &cobra.Command{
@@ -64,11 +64,11 @@ var natholeDiscoveryCmd = &cobra.Command{
 
 		addrs, localAddr, err := nathole.Discover([]string{cfg.NatHoleSTUNServer}, natHoleLocalAddr)
 		if err != nil {
-			fmt.Println("发现错误:", err)
+			fmt.Println("发现失败:", err)
 			os.Exit(1)
 		}
 		if len(addrs) < 2 {
-			fmt.Printf("发现错误: 无法获取足够的地址, 需要 2, 实际获取: %v\n", addrs)
+			fmt.Printf("发现失败: 无法获取足够的地址, 需要 2 个, 实际获取: %v\n", addrs)
 			os.Exit(1)
 		}
 

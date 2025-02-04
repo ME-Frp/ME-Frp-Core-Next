@@ -257,7 +257,7 @@ func (pw *Wrapper) InWorkConn(workConn net.Conn, m *msg.StartWorkConn) {
 	pxy := pw.pxy
 	pw.mu.RUnlock()
 	if pxy != nil && pw.Phase == ProxyPhaseRunning {
-		xl.Debugf("开始一个新的工作连接, 本地地址: %s 远程地址: %s", workConn.LocalAddr().String(), workConn.RemoteAddr().String())
+		xl.Debugf("开始一个新的工作连接, 本地地址: [%s] 远程地址: [%s]", workConn.LocalAddr().String(), workConn.RemoteAddr().String())
 		go pxy.InWorkConn(workConn, m)
 	} else {
 		workConn.Close()

@@ -81,7 +81,7 @@ func (pxy *SUDPProxy) Close() {
 
 func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 	xl := pxy.xl
-	xl.Infof("收到新的 SUDP 隧道工作连接, %s", conn.RemoteAddr().String())
+	xl.Infof("收到新的 SUDP 隧道工作连接 [%s]", conn.RemoteAddr().String())
 
 	var rwc io.ReadWriteCloser = conn
 	var err error
@@ -94,7 +94,7 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 		rwc, err = libio.WithEncryption(rwc, []byte(pxy.clientCfg.Auth.Token))
 		if err != nil {
 			conn.Close()
-			xl.Errorf("创建加密流错误: %v", err)
+			xl.Errorf("创建加密流失败: %v", err)
 			return
 		}
 	}
@@ -140,14 +140,14 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 
 			var udpMsg msg.UDPPacket
 			if errRet := msg.ReadMsgInto(conn, &udpMsg); errRet != nil {
-				xl.Warnf("从工作连接读取数据错误: %v", errRet)
+				xl.Warnf("从 SUDP 工作连接读取数据错误: %v", errRet)
 				return
 			}
 
 			if errRet := errors.PanicToError(func() {
 				readCh <- &udpMsg
 			}); errRet != nil {
-				xl.Warnf("从工作连接读取数据错误: %v", errRet)
+				xl.Warnf("SUDP 工作连接读取线程已关闭: %v", errRet)
 				return
 			}
 		}
@@ -164,7 +164,7 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 		for rawMsg := range sendCh {
 			switch m := rawMsg.(type) {
 			case *msg.UDPPacket:
-				xl.Tracef("客户端发送 UDP 数据包到访问者, [udp 本地: %v, 远程: %v], [tcp 工作连接 本地: %v, 远程: %v]",
+				xl.Tracef("客户端发送 UDP 数据包到访问者, [UDP 本地: %v, 远程: %v], [TCP 工作连接 本地: %v, 远程: %v]",
 					m.LocalAddr.String(), m.RemoteAddr.String(), conn.LocalAddr().String(), conn.RemoteAddr().String())
 			case *msg.Ping:
 				xl.Tracef("客户端发送 Ping 消息到访问者")
@@ -191,11 +191,11 @@ func (pxy *SUDPProxy) InWorkConn(conn net.Conn, _ *msg.StartWorkConn) {
 				if errRet = errors.PanicToError(func() {
 					sendCh <- &msg.Ping{}
 				}); errRet != nil {
-					xl.Warnf("heartbeat goroutine for sudp work connection closed")
+					xl.Warnf("SUDP 工作连接心跳线程已关闭: %v", errRet)
 					return
 				}
 			case <-pxy.closeCh:
-				xl.Tracef("frpc sudp proxy is closed")
+				xl.Tracef("ME Frp 客户端 SUDP 隧道已关闭")
 				return
 			}
 		}

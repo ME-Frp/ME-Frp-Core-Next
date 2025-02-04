@@ -118,17 +118,17 @@ func (monitor *Monitor) checkWorker() {
 		}
 
 		if err == nil {
-			xl.Tracef("执行一次健康检查成功")
+			xl.Tracef("执行一次 HealthCheck 成功")
 			if !monitor.statusOK && monitor.statusNormalFn != nil {
-				xl.Infof("健康检查状态变为成功")
+				xl.Infof("HealthCheck 状态变为成功")
 				monitor.statusOK = true
 				monitor.statusNormalFn()
 			}
 		} else {
-			xl.Warnf("执行一次健康检查失败: %v", err)
+			xl.Warnf("执行一次 HealthCheck 失败: %v", err)
 			monitor.failedTimes++
 			if monitor.statusOK && int(monitor.failedTimes) >= monitor.maxFailedTimes && monitor.statusFailedFn != nil {
-				xl.Warnf("健康检查状态变为失败")
+				xl.Warnf("HealthCheck 状态变为失败")
 				monitor.statusOK = false
 				monitor.statusFailedFn()
 			}
@@ -179,7 +179,7 @@ func (monitor *Monitor) doHTTPCheck(ctx context.Context) error {
 	_, _ = io.Copy(io.Discard, resp.Body)
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("执行 HTTP 健康检查, 状态码为 [%d] 不是 2xx", resp.StatusCode)
+		return fmt.Errorf("执行 HTTP HealthCheck, 状态码为 [%d] 不是 2xx", resp.StatusCode)
 	}
 	return nil
 }

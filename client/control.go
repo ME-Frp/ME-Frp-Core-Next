@@ -16,6 +16,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync/atomic"
 	"time"
@@ -122,7 +123,7 @@ func (ctl *Control) handleReqWorkConn(_ msg.Message) {
 	xl := ctl.xl
 	workConn, err := ctl.connectServer()
 	if err != nil {
-		xl.Warnf("启动新连接到服务器错误: %v", err)
+		xl.Warnf("启动新连接到服务器失败: %v", err)
 		return
 	}
 
@@ -130,12 +131,12 @@ func (ctl *Control) handleReqWorkConn(_ msg.Message) {
 		RunID: ctl.sessionCtx.RunID,
 	}
 	if err = ctl.sessionCtx.AuthSetter.SetNewWorkConn(m); err != nil {
-		xl.Warnf("NewWorkConn 认证错误: %v", err)
+		xl.Warnf("NewWorkConn 认证失败: %v", err)
 		workConn.Close()
 		return
 	}
 	if err = msg.WriteMsg(workConn, m); err != nil {
-		xl.Warnf("工作连接写入服务器错误: %v", err)
+		xl.Warnf("工作连接写入服务器失败: %v", err)
 		workConn.Close()
 		return
 	}
@@ -243,6 +244,20 @@ func (ctl *Control) handleGetProxyBandwidthLimitResp(m msg.Message) {
 	xl := ctl.xl
 	inMsg := m.(*msg.GetProxyBandwidthLimitResp)
 	xl.Infof("隧道 [%s] 带宽限制: %d Mbps ↑ , %d Mbps ↓", inMsg.ProxyName, inMsg.OutBound, inMsg.InBound)
+	cfg, ok := ctl.pm.GetProxyConfig(inMsg.ProxyName)
+	if !ok {
+		xl.Warnf("内部错误：隧道 [%s] 未找到, 您可以继续使用", inMsg.ProxyName)
+		return
+	}
+
+	var limit int64
+	if inMsg.InBound > 0 {
+		limit = inMsg.InBound
+	} else {
+		limit = inMsg.OutBound
+	}
+	baseCfg := cfg.GetBaseConfig()
+	_ = baseCfg.Transport.BandwidthLimit.UnmarshalString(fmt.Sprintf("%dMB", limit))
 }
 
 // heartbeatWorker sends heartbeat to server and check heartbeat timeout.

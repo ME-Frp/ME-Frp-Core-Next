@@ -158,7 +158,7 @@ func (svr *Service) Run(ctx context.Context) error {
 	if svr.ctl == nil {
 		cancelCause := cancelErr{}
 		_ = errors.As(context.Cause(svr.ctx), &cancelCause)
-		return fmt.Errorf("登录节点失败: %v. 启用 loginFailExit 后, 将不再尝试重试", cancelCause.Err)
+		return fmt.Errorf("登录节点失败: %v; 启用 loginFailExit 后, 将不再尝试重试", cancelCause.Err)
 	}
 
 	go svr.keepControllerWorking()

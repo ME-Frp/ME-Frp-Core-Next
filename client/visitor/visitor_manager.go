@@ -115,7 +115,7 @@ func (vm *Manager) startVisitor(cfg v1.VisitorConfigurer) (err error) {
 	visitor := NewVisitor(vm.ctx, cfg, vm.clientCfg, vm.helper)
 	err = visitor.Run()
 	if err != nil {
-		xl.Warnf("启用访问者错误: %v", err)
+		xl.Warnf("启用访问者失败: %v", err)
 	} else {
 		vm.visitors[name] = visitor
 		xl.Infof("启用访问者成功")
@@ -156,7 +156,7 @@ func (vm *Manager) UpdateAll(cfgs []v1.VisitorConfigurer) {
 		}
 	}
 	if len(delNames) > 0 {
-		xl.Infof("访问者已移除: %v", delNames)
+		xl.Infof("访问者已移除: [%v]", delNames)
 	}
 
 	addNames := make([]string, 0)
@@ -169,7 +169,7 @@ func (vm *Manager) UpdateAll(cfgs []v1.VisitorConfigurer) {
 		}
 	}
 	if len(addNames) > 0 {
-		xl.Infof("访问者已启用: %v", addNames)
+		xl.Infof("访问者已启用: [%v]", addNames)
 	}
 }
 
