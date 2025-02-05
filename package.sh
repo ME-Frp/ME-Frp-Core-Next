@@ -35,17 +35,37 @@ for os in $os_all; do
             
             if [ "x${os}" = x"windows" ]; then
                 if [ -f "./mefrpc_${suffix}.exe" ]; then
-                    mv "./mefrpc_${suffix}.exe" "./packages/mefrpc_${suffix}_${frp_version}.exe"
+                    mkdir -p "./packages/mefrpc_${suffix}_${frp_version}"
+                    cp "./mefrpc_${suffix}.exe" "./packages/mefrpc_${suffix}_${frp_version}/mefrpc.exe"
+                    cd ./packages
+                    zip -r "mefrpc_${suffix}_${frp_version}.zip" "mefrpc_${suffix}_${frp_version}"
+                    rm -rf "mefrpc_${suffix}_${frp_version}"
+                    cd ..
                 fi
                 if [ -f "./mefrps_${suffix}.exe" ]; then
-                    mv "./mefrps_${suffix}.exe" "./packages/mefrps_${suffix}_${frp_version}.exe"
+                    mkdir -p "./packages/mefrps_${suffix}_${frp_version}"
+                    cp "./mefrps_${suffix}.exe" "./packages/mefrps_${suffix}_${frp_version}/mefrps.exe"
+                    cd ./packages
+                    zip -r "mefrps_${suffix}_${frp_version}.zip" "mefrps_${suffix}_${frp_version}"
+                    rm -rf "mefrps_${suffix}_${frp_version}"
+                    cd ..
                 fi
             else
                 if [ -f "./mefrpc_${suffix}" ]; then
-                    mv "./mefrpc_${suffix}" "./packages/mefrpc_${suffix}_${frp_version}"
+                    mkdir -p "./packages/mefrpc_${suffix}_${frp_version}"
+                    cp "./mefrpc_${suffix}" "./packages/mefrpc_${suffix}_${frp_version}/mefrpc"
+                    cd ./packages
+                    tar -cf "mefrpc_${suffix}_${frp_version}.tar" "mefrpc_${suffix}_${frp_version}"
+                    rm -rf "mefrpc_${suffix}_${frp_version}"
+                    cd ..
                 fi
                 if [ -f "./mefrps_${suffix}" ]; then
-                    mv "./mefrps_${suffix}" "./packages/mefrps_${suffix}_${frp_version}"
+                    mkdir -p "./packages/mefrps_${suffix}_${frp_version}"
+                    cp "./mefrps_${suffix}" "./packages/mefrps_${suffix}_${frp_version}/mefrps"
+                    cd ./packages
+                    tar -cf "mefrps_${suffix}_${frp_version}.tar" "mefrps_${suffix}_${frp_version}"
+                    rm -rf "mefrps_${suffix}_${frp_version}"
+                    cd ..
                 fi
             fi
         done
