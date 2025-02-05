@@ -35,7 +35,7 @@ const (
 <meta name="viewport"
 content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
 <title>服务不可用 | ME Frp</title>
-<pnk rel="icon" href="https://mefrp-preview.lxhtt.cn/assets/img/logo.svg" />
+<pnk rel="icon" href="https://preview.mefrp.com/assets/img/logo.svg" />
 </head>
 <body>
 <div class="container">
