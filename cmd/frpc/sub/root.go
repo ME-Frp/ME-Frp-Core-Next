@@ -248,7 +248,7 @@ func runEasyStartup() error {
 	for _, proxy := range proxies {
 		proxyCfg := createProxyConfig(&proxy, userToken)
 		if proxyCfg == nil {
-			return fmt.Errorf("不支持的隧道类型: %s (支持的类型: tcp, http, https)", proxy.ProxyType)
+			return fmt.Errorf("不支持的隧道类型: %s (支持的类型: tcp, udp, http, https)", proxy.ProxyType)
 		}
 		proxyCfgs = append(proxyCfgs, proxyCfg)
 	}
@@ -278,6 +278,11 @@ func createProxyConfig(proxy *ProxyConfigResp, userToken string) v1.ProxyConfigu
 	switch proxy.ProxyType {
 	case "tcp":
 		return &v1.TCPProxyConfig{
+			ProxyBaseConfig: baseConfig,
+			RemotePort:      int(proxy.RemotePort),
+		}
+	case "udp":
+		return &v1.UDPProxyConfig{
 			ProxyBaseConfig: baseConfig,
 			RemotePort:      int(proxy.RemotePort),
 		}
