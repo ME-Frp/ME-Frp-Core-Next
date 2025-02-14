@@ -404,11 +404,13 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 		return
 	}
 	reqBody := struct {
-		ProxyName string `json:"proxyName"`
-		RunId     string `json:"runId"`
+		ProxyName     string `json:"proxyName"`
+		ClientVersion string `json:"clientVersion"`
+		RunId         string `json:"runId"`
 	}{
-		ProxyName: inMsg.ProxyName,
-		RunId:     ctl.runID,
+		ProxyName:     inMsg.ProxyName,
+		ClientVersion: ctl.loginMsg.Version,
+		RunId:         ctl.runID,
 	}
 	reqBytes, _ := json.Marshal(reqBody)
 	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/frp/proxyStarted", ctl.serverCfg.MefrpApi.ApiUrl), bytes.NewBuffer(reqBytes))
