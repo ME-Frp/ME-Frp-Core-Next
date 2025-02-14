@@ -207,53 +207,58 @@ func startService(
 
 func runEasyStartup() error {
 	if userToken == "" || proxyId == "" {
-		return fmt.Errorf("使用快捷启动时, 用户Token 和 隧道Id 都是必需的")
+		return fmt.Errorf("使用快捷启动时, 用户 Token 和 隧道 Id 都是必需的")
 	}
 
-	// 获取所有隧道配置
 	proxyIds := strings.Split(proxyId, ",")
-	var proxies []ProxyConfigResp
+	var wg sync.WaitGroup
 
 	for _, pid := range proxyIds {
-		proxyConfig, err := fetchProxyConfig(pid, userToken)
-		if err != nil {
-			return fmt.Errorf("获取隧道 [%s] 配置失败: %v", pid, err)
-		}
-		proxies = append(proxies, proxyConfig)
+		wg.Add(1)
+		go func(proxyId string) {
+			defer wg.Done()
+
+			proxyConfig, err := fetchProxyConfig(proxyId, userToken)
+			if err != nil {
+				fmt.Printf("获取隧道配置失败: %v\n", err)
+				return
+			}
+
+			cfg := &v1.ClientCommonConfig{
+				Auth: v1.AuthClientConfig{
+					Method: "token",
+					Token:  proxyConfig.NodeToken,
+				},
+				ServerAddr:    proxyConfig.NodeAddr,
+				ServerPort:    int(proxyConfig.NodePort),
+				User:          userToken,
+				LoginFailExit: lo.ToPtr(true),
+				Log: v1.LogConfig{
+					To:      "console",
+					Level:   "info",
+					MaxDays: 3,
+				},
+			}
+
+			proxyCfg := createProxyConfig(&proxyConfig, userToken)
+			if proxyCfg == nil {
+				fmt.Printf("不支持的隧道类型: %s\n", proxyConfig.ProxyType)
+				return
+			}
+
+			if err := startService(cfg, []v1.ProxyConfigurer{proxyCfg}, nil, ""); err != nil {
+				fmt.Printf("启动隧道失败: %v\n", err)
+			}
+		}(pid)
 	}
 
-	if len(proxies) == 0 {
-		return fmt.Errorf("没有获取到任何隧道配置")
-	}
+	wg.Wait()
 
-	// 创建通用配置
-	cfg := &v1.ClientCommonConfig{
-		Auth: v1.AuthClientConfig{
-			Method: "token",
-			Token:  proxies[0].NodeToken,
-		},
-		ServerAddr:    proxies[0].NodeAddr,
-		ServerPort:    int(proxies[0].NodePort),
-		User:          userToken,
-		LoginFailExit: lo.ToPtr(true),
-		Log: v1.LogConfig{
-			To:      "console",
-			Level:   "info",
-			MaxDays: 3,
-		},
-	}
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
 
-	// 创建所有代理配置
-	var proxyCfgs []v1.ProxyConfigurer
-	for _, proxy := range proxies {
-		proxyCfg := createProxyConfig(&proxy, userToken)
-		if proxyCfg == nil {
-			return fmt.Errorf("不支持的隧道类型: %s (支持的类型: tcp, udp, http, https)", proxy.ProxyType)
-		}
-		proxyCfgs = append(proxyCfgs, proxyCfg)
-	}
-
-	return startService(cfg, proxyCfgs, nil, "")
+	return nil
 }
 
 func createProxyConfig(proxy *ProxyConfigResp, userToken string) v1.ProxyConfigurer {
