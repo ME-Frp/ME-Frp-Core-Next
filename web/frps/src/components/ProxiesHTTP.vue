@@ -15,7 +15,7 @@ import type { BaseProxy } from '../utils/proxy'
 const proxies = ref<BaseProxy[]>([])
 
 const fetchData = () => {
-  fetch('../api/proxies/http', { credentials: 'include' })
+  fetch('../api/proxy/http', { credentials: 'include' })
     .then((res) => res.json())
     .then((json) => {
       proxies.value = json.proxies

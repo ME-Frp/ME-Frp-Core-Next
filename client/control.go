@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -171,10 +172,31 @@ func (ctl *Control) handleNewProxyResp(m msg.Message) {
 			xl.Warnf("内部错误：隧道 [%s] 未找到, 您可以继续使用本隧道", inMsg.ProxyName)
 		}
 		proxyType := cfg.GetBaseConfig().Type
+		remoteAddr := inMsg.RemoteAddr
 		if proxyType != "http" && proxyType != "https" {
-			inMsg.RemoteAddr = ctl.sessionCtx.Common.ServerAddr + inMsg.RemoteAddr
+			remoteAddr = ctl.sessionCtx.Common.ServerAddr + inMsg.RemoteAddr
+		} else {
+			// 对于 HTTP/HTTPS 类型，显示所有域名
+			var domains []string
+			switch proxyType {
+			case "http":
+				if httpCfg, ok := cfg.(*v1.HTTPProxyConfig); ok {
+					domains = httpCfg.DomainConfig.CustomDomains
+				}
+			case "https":
+				if httpsCfg, ok := cfg.(*v1.HTTPSProxyConfig); ok {
+					domains = httpsCfg.DomainConfig.CustomDomains
+				}
+			}
+			if len(domains) > 0 {
+				var addrs []string
+				for _, domain := range domains {
+					addrs = append(addrs, fmt.Sprintf("%s://%s", proxyType, domain))
+				}
+				remoteAddr = strings.Join(addrs, " 或 ")
+			}
 		}
-		xl.Infof("启动 [%s] 隧道 [%s] 成功, 您可以使用 [%s] 访问您的服务", proxyType, inMsg.ProxyName, inMsg.RemoteAddr)
+		xl.Infof("启动 [%s] 隧道 [%s] 成功, 您可以使用 [%s] 访问您的服务", proxyType, inMsg.ProxyName, remoteAddr)
 	}
 }
 

@@ -181,8 +181,8 @@ func startService(
 	log.InitLogger(cfg.Log.To, cfg.Log.Level, int(cfg.Log.MaxDays), cfg.Log.DisablePrintColor)
 
 	if cfgFile != "" {
-		log.Infof("开始启动 ME Frp 隧道, 配置文件 [%s]", cfgFile)
-		defer log.Infof("ME Frp 客户端配置文件 [%s] 已停止", cfgFile)
+		log.Infof("开始启动 ME Frp 隧道, 当前正在使用配置文件 [%s]", cfgFile)
+		defer log.Infof("ME Frp 客户端已停止")
 	} else if cfg.User != "" {
 		log.Infof("开始启动 ME Frp 隧道, 当前正在使用快捷启动")
 		defer log.Infof("ME Frp 客户端已停止")
@@ -220,7 +220,7 @@ func runEasyStartup() error {
 
 			proxyConfig, err := fetchProxyConfig(proxyId, userToken)
 			if err != nil {
-				fmt.Printf("获取隧道配置失败: %v\n", err)
+				log.Warnf("获取隧道 [%s] 配置失败: %v\n", proxyId, err)
 				return
 			}
 
@@ -242,12 +242,12 @@ func runEasyStartup() error {
 
 			proxyCfg := createProxyConfig(&proxyConfig, userToken)
 			if proxyCfg == nil {
-				fmt.Printf("不支持的隧道类型: %s\n", proxyConfig.ProxyType)
+				log.Warnf("不支持的隧道类型: %s\n", proxyConfig.ProxyType)
 				return
 			}
 
 			if err := startService(cfg, []v1.ProxyConfigurer{proxyCfg}, nil, ""); err != nil {
-				fmt.Printf("启动隧道失败: %v\n", err)
+				log.Warnf("启动隧道失败: %v\n", err)
 			}
 		}(pid)
 	}
@@ -280,6 +280,15 @@ func createProxyConfig(proxy *ProxyConfigResp, userToken string) v1.ProxyConfigu
 		},
 	}
 
+	// 解析 domain 字段
+	var domains []string
+	if proxy.Domain != "" {
+		if err := json.Unmarshal([]byte(proxy.Domain), &domains); err != nil {
+			// 如果解析失败,则将其作为单个域名处理
+			domains = []string{proxy.Domain}
+		}
+	}
+
 	switch proxy.ProxyType {
 	case "tcp":
 		return &v1.TCPProxyConfig{
@@ -295,7 +304,7 @@ func createProxyConfig(proxy *ProxyConfigResp, userToken string) v1.ProxyConfigu
 		return &v1.HTTPProxyConfig{
 			ProxyBaseConfig: baseConfig,
 			DomainConfig: v1.DomainConfig{
-				CustomDomains: []string{proxy.Domain},
+				CustomDomains: domains,
 			},
 			HostHeaderRewrite: proxy.HostHeaderRewrite,
 			RequestHeaders: v1.HeaderOperations{
@@ -308,7 +317,7 @@ func createProxyConfig(proxy *ProxyConfigResp, userToken string) v1.ProxyConfigu
 		return &v1.HTTPSProxyConfig{
 			ProxyBaseConfig: baseConfig,
 			DomainConfig: v1.DomainConfig{
-				CustomDomains: []string{proxy.Domain},
+				CustomDomains: domains,
 			},
 		}
 	default:
