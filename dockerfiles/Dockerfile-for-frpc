@@ -9,6 +9,6 @@ FROM alpine:3
 
 RUN apk add --no-cache tzdata
 
-COPY --from=building /building/bin/frpc /usr/bin/frpc
+COPY --from=building /building/bin/mefrpc /usr/bin/mefrpc
 
-ENTRYPOINT ["/usr/bin/frpc"]
+ENTRYPOINT ["/usr/bin/mefrpc"]

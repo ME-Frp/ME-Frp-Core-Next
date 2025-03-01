@@ -9,6 +9,6 @@ FROM alpine:3
 
 RUN apk add --no-cache tzdata
 
-COPY --from=building /building/bin/frps /usr/bin/frps
+COPY --from=building /building/bin/mefrps /usr/bin/mefrps
 
-ENTRYPOINT ["/usr/bin/frps"]
+ENTRYPOINT ["/usr/bin/mefrps"]
