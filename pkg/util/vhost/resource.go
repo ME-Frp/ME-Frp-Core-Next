@@ -277,7 +277,7 @@ transition: color 0.3s ease;
 .container .powered-by a:hover {
 color: #003399;
 }
-@media (max-width: 700px) {
+@media (max-width: 768px) {
 .content {
 flex-direction: column;
 }

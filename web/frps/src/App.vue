@@ -164,12 +164,12 @@ const handleExpand = (keys: string[]) => {
 }
 
 const showMenu = ref(false)
-const isMobile = ref(window.innerWidth <= 700)
+const isMobile = ref(window.innerWidth <= 768)
 const isCollapsed = ref(false)
 
 // 监听窗口大小变化
 const handleWindowResize = () => {
-  isMobile.value = window.innerWidth <= 700
+  isMobile.value = window.innerWidth <= 768
 }
 
 onMounted(() => {
@@ -260,7 +260,7 @@ body,
   min-height: calc(100vh - 64px);
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .n-layout-content {
     padding: 16px !important;
   }
