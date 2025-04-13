@@ -333,6 +333,7 @@ func fetchProxyConfig(proxyId string, userToken string) (ProxyConfigResp, error)
 		return ProxyConfigResp{}, fmt.Errorf("创建请求失败: %v", err)
 	}
 
+	req.Header.Set("User-Agent", "MEFrp-Client/"+version.Full())
 	req.Header.Set("Authorization", "Bearer "+userToken)
 	req.Header.Set("Content-Type", "application/json")
 

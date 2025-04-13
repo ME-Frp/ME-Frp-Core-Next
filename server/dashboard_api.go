@@ -15,8 +15,10 @@
 package server
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"slices"
 
@@ -415,7 +417,8 @@ func (svr *Service) kickClient(w http.ResponseWriter, r *http.Request) {
 		resp = CloseUserResp{}
 	)
 	var bodyMap struct {
-		RunID string `json:"runId"`
+		RunID        string `json:"runId"`                  // required
+		SelfPostKick bool   `json:"selfPostKick,omitempty"` // optional, default is true
 	}
 	if err := json.NewDecoder(r.Body).Decode(&bodyMap); err != nil {
 		resp.Status = 400
@@ -434,6 +437,26 @@ func (svr *Service) kickClient(w http.ResponseWriter, r *http.Request) {
 	} else {
 		resp.Status = 200
 		resp.Msg = "OK"
+	}
+	// if selfPostKick is provided, post to backend to disable the proxy
+	if bodyMap.SelfPostKick {
+		reqBody := struct {
+			RunId string `json:"runId"`
+		}{
+			RunId: runId,
+		}
+		reqBytes, _ := json.Marshal(reqBody)
+		req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/frp/postKick", svr.cfg.MefrpApi.ApiUrl), bytes.NewBuffer(reqBytes))
+		req.Header.Set("User-Agent", "MEFrp-Server/"+version.Full())
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s|%d", svr.cfg.MefrpApi.Token, svr.cfg.MefrpApi.NodeId))
+		httpResp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Warnf("发送请求失败: %v", err)
+		}
+		if httpResp != nil {
+			_ = httpResp.Body.Close()
+		}
 	}
 	buf, _ = json.Marshal(&resp)
 	_, err = w.Write(buf)

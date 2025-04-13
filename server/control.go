@@ -346,6 +346,7 @@ func (ctl *Control) worker() {
 		}
 		reqBytes, _ := json.Marshal(reqBody)
 		req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/frp/proxyClosed", ctl.serverCfg.MefrpApi.ApiUrl), bytes.NewBuffer(reqBytes))
+		req.Header.Set("User-Agent", "MEFrp-Server/"+version.Full())
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s|%d", ctl.serverCfg.MefrpApi.Token, ctl.serverCfg.MefrpApi.NodeId))
 		http.DefaultClient.Do(req)
@@ -414,6 +415,7 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 	}
 	reqBytes, _ := json.Marshal(reqBody)
 	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/frp/proxyStarted", ctl.serverCfg.MefrpApi.ApiUrl), bytes.NewBuffer(reqBytes))
+	req.Header.Set("User-Agent", "MEFrp-Server/"+version.Full())
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s|%d", ctl.serverCfg.MefrpApi.Token, ctl.serverCfg.MefrpApi.NodeId))
 	resp, err := http.DefaultClient.Do(req)
